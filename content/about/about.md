@@ -4,7 +4,7 @@ draft: false
 date: 2025-01-09
 description: "What are my occupations?"
 noSummary: true
-noHeading: true
+noHeadline: true
 ---
 
 Doing programming since the 80s, I still see stuff that I would like to work which doesn't.
