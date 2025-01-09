@@ -412,4 +412,4 @@ One thing I missed in the traefik documentation is what magic traefik does to cr
 
 If you want to leave a comment, please click on the toot and reply. Your comment will then appear here.
 
-{{< mastodon "https://ioc.exchange/@ineiti/113759574082569925" >}}
+{{< mastodon "https://ioc.exchange/@ineiti/113800007465114352" >}}
