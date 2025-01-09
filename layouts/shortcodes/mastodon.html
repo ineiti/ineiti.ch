@@ -1,0 +1,148 @@
+<div id="blog-post"></div>
+
+<script>
+    function getPhanpyURL(instance, type, tootId) {
+        return `https://phanpy.social/#/${instance}/${type}/${tootId}`;
+    }
+
+    function fetchAndDisplayReplies(tootUrl) {
+        const [, instance, username, tootId] = tootUrl.match(/https:\/\/([^\/]+)\/@([^\/]+)\/(\d+)/);
+
+        // Fetch the original toot
+        fetch(`https://${instance}/api/v1/statuses/${tootId}`)
+            .then(response => response.json())
+            .then(originalToot => {
+                const commentsContainer = document.createElement('div');
+                commentsContainer.id = 'mastodon-comments';
+
+                const originalTootElement = createReplyElement(instance, originalToot, 0);
+                originalTootElement.classList.add('original-toot');
+                commentsContainer.appendChild(originalTootElement);
+
+
+                fetch(`https://${instance}/api/v1/statuses/${tootId}/context`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const replies = data.descendants;
+                        const threadedReplies = createThreadedReplies(replies);
+                        renderThreadedReplies(instance, threadedReplies, commentsContainer);
+
+                        document.querySelector('#blog-post').appendChild(commentsContainer);
+                    })
+                    .catch(error => console.error('Error fetching replies:', error));
+            });
+    }
+
+    function createThreadedReplies(replies) {
+        const threadMap = new Map();
+        replies.forEach(reply => {
+            reply.children = [];
+            reply.top = true;
+            threadMap.set(reply.id, reply);
+            if (reply.in_reply_to_id && threadMap.has(reply.in_reply_to_id)) {
+                threadMap.get(reply.in_reply_to_id).children.push(reply);
+                reply.top = false;
+            }
+        });
+        return Array.from(threadMap.values()).filter(reply => reply.top);
+    }
+
+    function renderThreadedReplies(instance, replies, container, depth = 1) {
+        replies.forEach(reply => {
+            const replyElement = createReplyElement(instance, reply, depth);
+            container.appendChild(replyElement);
+            if (reply.children.length > 0) {
+                renderThreadedReplies(instance, reply.children, container, depth + 1);
+            }
+        });
+    }
+
+    function createReplyElement(instance, reply, depth) {
+        const replyDiv = document.createElement('div');
+        replyDiv.className = 'mastodon-reply';
+        replyDiv.style.marginLeft = `${depth * 20}px`;
+
+        const authorLink = document.createElement('a');
+        authorLink.href = getPhanpyURL(instance, 'a', reply.account.id);
+        authorLink.textContent = reply.account.display_name || reply.account.username;
+        authorLink.className = 'author-link';
+
+        const dateLink = document.createElement('a');
+        dateLink.href = getPhanpyURL(instance, 's', reply.id);
+        dateLink.textContent = new Date(reply.created_at).toLocaleString();
+        dateLink.className = 'date-link';
+
+        const content = document.createElement('p');
+        content.innerHTML = reply.content;
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'toot-actions';
+
+        const openButton = document.createElement('button');
+        openButton.textContent = '❤️ Open';
+        openButton.onclick = () => window.open(dateLink.href, '_blank');
+
+        actionsDiv.appendChild(openButton);
+
+        replyDiv.appendChild(authorLink);
+        replyDiv.appendChild(document.createTextNode(' • '));
+        replyDiv.appendChild(dateLink);
+        replyDiv.appendChild(content);
+        replyDiv.appendChild(actionsDiv);
+
+        return replyDiv;
+    }
+
+    const style = document.createElement('style');
+    style.textContent = `
+  .original-toot {
+    background-color: #46434f;
+    border: 2px solid #2b90d9;
+    margin-bottom: 20px;
+  }
+  #mastodon-comments {
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+  }
+  .mastodon-reply {
+    background-color: #292929;
+    border: 1px solid #e1e1e1;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .author-link {
+    color: #2b90d9;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .date-link {
+    color: #606984;
+    font-size: 0.8em;
+    text-decoration: none;
+  }
+  .mastodon-reply p {
+    margin: 5px 0;
+  }
+  .toot-actions {
+    margin-top: 5px;
+  }
+  .toot-actions button {
+    background-color: #2b90d9;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-right: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .toot-actions button:hover {
+    background-color: #2080c0;
+  }
+`;
+    document.head.appendChild(style);
+
+    // Call the function when the DOM is loaded
+    window.onload =
+        fetchAndDisplayReplies('{{ .Get 0 }}');
+</script>

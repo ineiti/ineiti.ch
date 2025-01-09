@@ -1,0 +1,28 @@
+{
+  "packages": [
+    "less@latest",
+    "hugo@latest",
+    "openssh@latest",
+    "nodejs@20",
+    "git@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "if [ ! -f themes/enchanted-lowkey/theme.toml ]; then git submodule init && git submodule update; fi",
+      "alias ls='ls --color'",
+      "alias ll='ls -l --color'"
+    ],
+    "scripts": {
+      "hugo": [
+        "hugo $@"
+      ],
+      "server": [
+        "hugo server -D"
+      ],
+      "update": [
+        "git pull",
+        "hugo"
+      ]
+    }
+  }
+}
