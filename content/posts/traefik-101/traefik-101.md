@@ -133,6 +133,7 @@ entryPoints:
     http:
       # Set up TLS for every router using this entrypoint.
       tls:
+        certResolver: myresolver
         domains:
         # Here you can add domains which do not appear in any Host(``) rule,
         # but for which you still need certificates. This is useful for some
