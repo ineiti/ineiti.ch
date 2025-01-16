@@ -106,3 +106,9 @@ As it turns out, the TLS library in the Atom Lite has difficulties with a long c
 I didn't dig into it, as the library is written in C, and precompiled.
 Perhaps even an update of the library would've helped, but I was using the Arduino IDE, and didn't want
 to go into all the trouble of updating it.
+
+## Comments
+
+If you want to leave a comment, please click on the toot and reply. Your comment will then appear here.
+
+{{< mastodon "https://ioc.exchange/@ineiti/113836672361322016" >}}
