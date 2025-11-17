@@ -31,6 +31,12 @@ data from the internet. During this phase:
 At this stage, the model understands language but isn't yet optimized for having
 conversations or following instructions.
 
+### Try it yourself
+
+Use the slider below to adjust the training level and click "Predict Next Word" to see how training improves the model's predictions:
+
+{{< llm-predictor >}}
+
 ## 2. Reinforcement Learning with Human Feedback (RLHF)
 
 To transform the base model into something that can answer questions naturally,
