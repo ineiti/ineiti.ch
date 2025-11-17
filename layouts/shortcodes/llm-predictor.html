@@ -1,0 +1,353 @@
+<div class="llm-predictor">
+  <div class="phrase-container">
+    <div class="phrase-display" id="phraseDisplay">The cat is chasing</div>
+  </div>
+
+  <div class="llm-container">
+    <div class="llm-box" id="llmBox">
+      <div class="llm-label">LLM</div>
+      <div class="processing-indicator" id="processingIndicator"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="slider-control">
+      <label for="trainingSlider" id="trainingLabel">Training: 25%</label>
+      <input type="range" id="trainingSlider" min="0" max="3" value="0" step="1">
+      <div class="slider-labels">
+        <span>Untrained</span>
+        <span>Trained</span>
+      </div>
+    </div>
+
+    <button id="predictButton" class="predict-button">Predict Next Word</button>
+  </div>
+
+  <!-- Animation particles -->
+  <div class="animation-particle input-particle" id="inputParticle"></div>
+  <div class="animation-particle output-particle" id="outputParticle"></div>
+</div>
+
+<style>
+.llm-predictor {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--background, #f5f5f5);
+  border-radius: 8px;
+  border: 2px solid var(--border-color, #ddd);
+  position: relative;
+}
+
+.phrase-container {
+  position: relative;
+}
+
+.phrase-display {
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background: #ffffff;
+  border-radius: 6px;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: #1a1a1a;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .llm-predictor {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+
+  .phrase-display {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+}
+
+.llm-container {
+  position: relative;
+}
+
+.llm-box {
+  width: 200px;
+  height: 120px;
+  margin: 2rem auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.llm-label {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.processing-indicator {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.processing-indicator.active {
+  opacity: 1;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Animation particles */
+.animation-particle {
+  position: absolute;
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+}
+
+.input-particle {
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.output-particle {
+  top: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@keyframes flowIn {
+  0% {
+    top: 80px;
+    opacity: 1;
+  }
+  100% {
+    top: 180px;
+    opacity: 0;
+  }
+}
+
+@keyframes flowOut {
+  0% {
+    top: 200px;
+    opacity: 1;
+    transform: translateX(-50%) scale(0.8);
+  }
+  100% {
+    top: 80px;
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.input-particle.animating {
+  animation: flowIn 0.6s ease-in;
+}
+
+.output-particle.animating {
+  animation: flowOut 0.6s ease-out;
+}
+
+.controls {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+  align-items: flex-end;
+}
+
+.slider-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.slider-control label {
+  font-weight: 600;
+  color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+  .slider-control label {
+    color: #e0e0e0;
+  }
+
+  .slider-labels span {
+    color: #b0b0b0;
+  }
+}
+
+#trainingSlider {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.predict-button {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  white-space: nowrap;
+  flex: 1;
+}
+
+.predict-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.predict-button:active {
+  transform: translateY(0);
+}
+
+.predict-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+</style>
+
+<script>
+(function() {
+  const phrases = [
+    ['The', 'cat', 'is', 'chasing', 'warble', 'garble', 'twas'],
+    ['The', 'cat', 'is', 'chasing', 'the', 'garble', 'house'],
+    ['The', 'cat', 'is', 'chasing', 'the', 'gray', 'house'],
+    ['The', 'cat', 'is', 'chasing', 'the', 'gray', 'mouse']
+  ];
+
+  const initialWords = ['The', 'cat', 'is', 'chasing'];
+  let currentWords = [...initialWords];
+  let currentIndex = initialWords.length;
+  let trainingLevel = 0;
+
+  const phraseDisplay = document.getElementById('phraseDisplay');
+  const llmBox = document.getElementById('llmBox');
+  const processingIndicator = document.getElementById('processingIndicator');
+  const predictButton = document.getElementById('predictButton');
+  const trainingSlider = document.getElementById('trainingSlider');
+  const trainingLabel = document.getElementById('trainingLabel');
+  const inputParticle = document.getElementById('inputParticle');
+  const outputParticle = document.getElementById('outputParticle');
+
+  function updateTrainingLabel() {
+    const percentage = 25 + (trainingLevel * 25);
+    trainingLabel.textContent = `Training: ${percentage}%`;
+  }
+
+  function updateDisplay() {
+    phraseDisplay.textContent = currentWords.join(' ');
+  }
+
+  function reset() {
+    currentWords = [...initialWords];
+    currentIndex = initialWords.length;
+    updateDisplay();
+    predictButton.textContent = 'Predict Next Word';
+  }
+
+  async function animateInputFlow() {
+    inputParticle.textContent = currentWords.join(' ');
+    inputParticle.classList.add('animating');
+
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    inputParticle.classList.remove('animating');
+  }
+
+  async function animateOutputFlow(word) {
+    outputParticle.textContent = word;
+    outputParticle.classList.add('animating');
+
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    outputParticle.classList.remove('animating');
+  }
+
+  async function predictNextWord() {
+    if (currentIndex >= phrases[trainingLevel].length) {
+      reset();
+      return;
+    }
+
+    // Disable button
+    predictButton.disabled = true;
+
+    // Animate input flowing into LLM
+    await animateInputFlow();
+
+    // Show processing
+    processingIndicator.classList.add('active');
+    await new Promise(resolve => setTimeout(resolve, 800));
+    processingIndicator.classList.remove('active');
+
+    // Get next word
+    const nextWord = phrases[trainingLevel][currentIndex];
+
+    // Animate output flowing from LLM
+    await animateOutputFlow(nextWord);
+
+    // Add next word to display
+    currentWords.push(nextWord);
+    currentIndex++;
+    updateDisplay();
+
+    // Re-enable button
+    predictButton.disabled = false;
+
+    // Check if phrase is complete
+    if (currentIndex >= phrases[trainingLevel].length) {
+      predictButton.textContent = 'Reset';
+    }
+  }
+
+  trainingSlider.addEventListener('input', (e) => {
+    trainingLevel = parseInt(e.target.value);
+    updateTrainingLabel();
+    reset();
+  });
+
+  predictButton.addEventListener('click', predictNextWord);
+})();
+</script>
