@@ -1,0 +1,85 @@
++++
+date = '2025-11-17T19:28:00+01:00'
+draft = true
+title = 'How do LLMs answer your question?'
+description = 'An exploration of the four key components that enable Large Language Models to provide intelligent responses'
+showTableOfContents = true
+categories = ['AI', 'Technology']
+tags = ['LLM', 'Machine Learning', 'AI', 'Natural Language Processing']
++++
+
+Large Language Models (LLMs) have become an integral part of our digital
+landscape, powering everything from chatbots to coding assistants. But how
+exactly do these models go from raw training data to providing helpful,
+contextual responses? This post explores the four key stages that make LLMs
+capable of answering your questions.
+
+## 1. Creating a Base Model Through Pre-training
+
+The foundation of any LLM begins with pre-training on massive amounts of text
+data from the internet. During this phase:
+
+- The model learns patterns, grammar, facts, and reasoning abilities from
+  billions of text examples
+- Training involves predicting the next word in sequences, which teaches the
+  model about language structure and world knowledge
+- This creates a "base model" with broad knowledge but no specific
+  instruction-following capabilities
+- The process requires enormous computational resources and can take weeks or
+  months
+
+At this stage, the model understands language but isn't yet optimized for having
+conversations or following instructions.
+
+## 2. Reinforcement Learning with Human Feedback (RLHF)
+
+To transform the base model into something that can answer questions naturally,
+we apply Reinforcement Learning with Human Feedback:
+
+- Human evaluators rank different model responses to the same prompt
+- The model learns to generate responses that align with human preferences
+- This teaches the model to be helpful, harmless, and honest
+- The model learns conversational patterns and how to structure answers in ways
+  humans find useful
+
+RLHF is crucial for making LLMs feel natural to interact with, rather than just
+producing statistically likely text.
+
+## 3. Adding a System Prompt for Business Direction
+
+When you interact with an LLM through a specific application, there's usually a
+hidden system prompt that guides its behavior:
+
+- The system prompt sets the context, tone, and constraints for the model
+- It can define the model's role (e.g., "You are a helpful coding assistant")
+- It includes safety guidelines and boundaries for what the model should and
+  shouldn't do
+- Different applications use different system prompts to customize the same
+  underlying model
+
+This is why the same LLM can behave differently across various platforms - the
+system prompt shapes its personality and capabilities.
+
+## 4. Tool Access Through System Prompt Description
+
+Modern LLMs are enhanced with the ability to use external tools, expanding their
+capabilities beyond pure text generation:
+
+- Tools (like web search, calculators, code execution, or file access) are
+  described in the system prompt
+- The model learns to recognize when a tool would be helpful and how to invoke
+  it
+- Tool descriptions include the name, purpose, and parameters needed
+- The model can chain multiple tool calls together to accomplish complex tasks
+
+This transforms LLMs from pure conversational agents into interactive systems
+that can take actions and access real-time information.
+
+## Conclusion
+
+The journey from raw text on the internet to an LLM that can helpfully answer
+your questions involves multiple sophisticated layers. Each stage -
+pre-training, RLHF, system prompts, and tool access - plays a crucial role in
+creating the intelligent, helpful assistants we interact with today.
+Understanding these components helps us appreciate both the capabilities and
+limitations of current LLM technology.

@@ -1,4 +1,4 @@
 [submodule "themes/poison"]
 	path = themes/poison
-	url = https://github.com/ineiti/poision
+	url = https://github.com/ineiti/poison
 	branch = main
