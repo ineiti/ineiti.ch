@@ -1,0 +1,471 @@
+<div class="rlhf-trainer">
+  <!-- Status Row: Training Progress and Current Step -->
+  <div class="status-row">
+    <div class="status-item">
+      <div class="status-label">RLHF Training</div>
+      <div class="status-value" id="trainingProgress">0%</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Next Step</div>
+      <div class="status-value" id="currentStep">Create Prompts</div>
+    </div>
+  </div>
+
+  <!-- Button Row -->
+  <div class="button-row">
+    <button id="resetBtn" class="control-button reset-button">Reset</button>
+    <button id="executeBtn" class="control-button execute-button">Execute Step</button>
+  </div>
+
+  <!-- Prompt Section -->
+  <div class="content-section">
+    <div class="section-label">Prompt</div>
+    <div class="prompt-text">"Explain quantum computing"</div>
+  </div>
+
+  <!-- Answer Section -->
+  <div class="content-section">
+    <div class="section-label">Model Response</div>
+    <div class="answer-text" id="answerText">
+      <em>Click "Execute Step" to begin the RLHF training cycle...</em>
+    </div>
+  </div>
+</div>
+
+<style>
+.rlhf-trainer {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--background, #f9f9f9);
+  border-radius: 8px;
+  border: 2px solid var(--border-color, #ddd);
+}
+
+@media (prefers-color-scheme: dark) {
+  .rlhf-trainer {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+}
+
+/* Status Row */
+.status-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color, #ddd);
+}
+
+@media (prefers-color-scheme: dark) {
+  .status-row {
+    border-bottom-color: #444;
+  }
+}
+
+.status-item {
+  text-align: center;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status-label {
+    color: #aaa;
+  }
+}
+
+.status-value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #667eea;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status-value {
+    color: #8b9ff5;
+  }
+}
+
+/* Button Row */
+.button-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.control-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-button {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.reset-button:hover {
+  background: #d0d0d0;
+  transform: translateY(-1px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .reset-button {
+    background: #444;
+    color: #e0e0e0;
+  }
+
+  .reset-button:hover {
+    background: #555;
+  }
+}
+
+.execute-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.execute-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.execute-button:active {
+  transform: translateY(0);
+}
+
+/* Content Sections */
+.content-section {
+  margin-bottom: 1.5rem;
+}
+
+.content-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .section-label {
+    color: #e0e0e0;
+  }
+}
+
+.prompt-text {
+  padding: 1rem;
+  background: #fff;
+  border-left: 4px solid #667eea;
+  border-radius: 4px;
+  color: #1a1a1a;
+  font-size: 1.1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .prompt-text {
+    background: #1a1a1a;
+    color: #e0e0e0;
+  }
+}
+
+.answer-text {
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 6px;
+  min-height: 120px;
+  color: #1a1a1a;
+  line-height: 1.8;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .answer-text {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+}
+
+.answer-text em {
+  color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+  .answer-text em {
+    color: #aaa;
+  }
+}
+
+/* Response Options */
+.response-option {
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  background: #f5f5f5;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  font-size: 0.95rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .response-option {
+    background: #2a2a2a;
+  }
+}
+
+.response-option strong {
+  color: #667eea;
+}
+
+.feedback-item {
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feedback-item::before {
+  content: '✓';
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.learning-indicator {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.learning-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-color-scheme: dark) {
+  .learning-spinner {
+    border-color: #444;
+    border-top-color: #8b9ff5;
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .rlhf-trainer {
+    padding: 1rem;
+  }
+
+  .status-row {
+    gap: 0.5rem;
+  }
+
+  .status-value {
+    font-size: 1.1rem;
+  }
+
+  .button-row {
+    gap: 0.5rem;
+  }
+
+  .control-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+</style>
+
+<script>
+(function() {
+  // Training stages: 0%, 50%, 100%
+  const trainingLevels = [0, 50, 100];
+
+  // Step names
+  const steps = ['Create Prompts', 'Human Feedback', 'Learn'];
+
+  // State
+  let trainingLevel = 0; // Index into trainingLevels (0, 1, 2)
+  let currentStepIndex = 0; // Index into steps (0, 1, 2)
+
+  // DOM elements
+  const trainingProgressEl = document.getElementById('trainingProgress');
+  const currentStepEl = document.getElementById('currentStep');
+  const answerTextEl = document.getElementById('answerText');
+  const executeBtn = document.getElementById('executeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  // Content for each step at each training level
+  const content = {
+    0: { // 0% training
+      'Create Prompts': `<strong>Generating multiple responses...</strong>
+
+<div class="response-option">
+<strong>Response A:</strong> Quantum computing quantum mechanics quantum bits qubit superposition entanglement algorithm...
+</div>
+
+<div class="response-option">
+<strong>Response B:</strong> Computing with quantum particles using physics principles for calculations.
+</div>
+
+<div class="response-option">
+<strong>Response C:</strong> Quantum computing is a type of computation that harnesses quantum mechanical phenomena.
+</div>`,
+
+      'Human Feedback': `<strong>Human evaluators provide rankings:</strong>
+
+<div class="feedback-item">Response C ranked highest - Clear and accurate</div>
+<div class="feedback-item">Response B ranked second - Too brief</div>
+<div class="feedback-item">Response A ranked lowest - Word salad</div>
+
+<em>The model will learn from these preferences...</em>`,
+
+      'Learn': `<div class="learning-indicator">
+<div class="learning-spinner"></div>
+<strong>Model updating weights...</strong>
+<p style="margin-top: 1rem;">Learning to prefer:<br>
+• Clear, structured explanations<br>
+• Accurate technical content<br>
+• Appropriate level of detail</p>
+</div>`
+    },
+
+    50: { // 50% training
+      'Create Prompts': `<strong>Generating improved responses...</strong>
+
+<div class="response-option">
+<strong>Response A:</strong> Quantum computing uses qubits instead of regular bits. Qubits can be 0 and 1 at same time. This makes quantum computers fast.
+</div>
+
+<div class="response-option">
+<strong>Response B:</strong> Quantum computing leverages quantum mechanics to process information differently than classical computers, using quantum bits that can exist in superposition states.
+</div>
+
+<div class="response-option">
+<strong>Response C:</strong> Unlike classical computers that use bits (0 or 1), quantum computers use qubits which can be in multiple states simultaneously through superposition.
+</div>`,
+
+      'Human Feedback': `<strong>Human evaluators provide feedback:</strong>
+
+<div class="feedback-item">Response C ranked highest - Best explanation for general audience</div>
+<div class="feedback-item">Response B ranked second - Good but slightly technical</div>
+<div class="feedback-item">Response A ranked third - Too simplified</div>
+
+<em>Continuing to refine response quality...</em>`,
+
+      'Learn': `<div class="learning-indicator">
+<div class="learning-spinner"></div>
+<strong>Refining response patterns...</strong>
+<p style="margin-top: 1rem;">Improving:<br>
+• Balance between simplicity and accuracy<br>
+• Use of analogies and comparisons<br>
+• Structured, reader-friendly format</p>
+</div>`
+    },
+
+    100: { // 100% training
+      'Create Prompts': `<strong>Generating well-trained responses...</strong>
+
+<div class="response-option">
+<strong>Response A:</strong> Quantum computing is an advanced computing paradigm that leverages quantum mechanical phenomena like superposition and entanglement. Unlike classical computers that process bits as either 0 or 1, quantum computers use qubits that can exist in multiple states simultaneously, enabling parallel computation at unprecedented scales.
+</div>
+
+<div class="response-option">
+<strong>Response B:</strong> Quantum computing represents a fundamentally different approach to computation. Classical computers use bits (0 or 1), while quantum computers use qubits that can be 0, 1, or both simultaneously through superposition. This allows quantum computers to solve certain complex problems exponentially faster than classical computers.
+</div>`,
+
+      'Human Feedback': `<strong>Human evaluators provide feedback:</strong>
+
+<div class="feedback-item">Response B ranked highest - Excellent balance and clarity</div>
+<div class="feedback-item">Response A ranked second - Very good but slightly dense</div>
+
+<em>Model has learned to consistently produce high-quality responses!</em>`,
+
+      'Learn': `<div class="learning-indicator">
+<div class="learning-spinner"></div>
+<strong>Fine-tuning response quality...</strong>
+<p style="margin-top: 1rem;">Mastering:<br>
+• Natural conversational tone<br>
+• Optimal information density<br>
+• Helpful, accurate, and engaging responses</p>
+</div>`
+    }
+  };
+
+  function updateDisplay() {
+    // Update training progress
+    trainingProgressEl.textContent = `${trainingLevels[trainingLevel]}%`;
+
+    // Update next step display
+    currentStepEl.textContent = steps[currentStepIndex];
+
+    // Update answer based on previous step (if not at initial state)
+    if (trainingLevel === 0 && currentStepIndex === 0) {
+      answerTextEl.innerHTML = '<em>Click "Execute Step" to begin the RLHF training cycle...</em>';
+    }
+  }
+
+  function executeStep() {
+    const stepName = steps[currentStepIndex];
+    const levelContent = content[trainingLevels[trainingLevel]];
+
+    // Display content for current step
+    answerTextEl.innerHTML = levelContent[stepName];
+
+    // Advance to next step
+    currentStepIndex++;
+
+    // If we completed all steps, advance training level and reset step
+    if (currentStepIndex >= steps.length) {
+      currentStepIndex = 0;
+      trainingLevel++;
+
+      // Cap at maximum training level
+      if (trainingLevel >= trainingLevels.length) {
+        trainingLevel = trainingLevels.length - 1;
+      }
+    }
+
+    updateDisplay();
+  }
+
+  function reset() {
+    trainingLevel = 0;
+    currentStepIndex = 0;
+    answerTextEl.innerHTML = '<em>Click "Execute Step" to begin the RLHF training cycle...</em>';
+    updateDisplay();
+  }
+
+  // Event listeners
+  executeBtn.addEventListener('click', executeStep);
+  resetBtn.addEventListener('click', reset);
+
+  // Initialize
+  updateDisplay();
+})();
+</script>
