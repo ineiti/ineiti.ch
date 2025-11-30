@@ -31,13 +31,13 @@ pluralizelisttitles = false   # removes the automatically appended "s" on sideba
 
     front_page_content = ["about", "posts"] # Equivalent to the default value, add page bundle names to include them on the front page.
 
-    # Links to your socials.  Comment or delete any you don't need/use. 
+    # Links to your socials.  Comment or delete any you don't need/use.
     email_url = "mailto://blog@ineiti.ch"
     github_url = "https://github.com/ineiti"
     gitlab_url = "https://gitlab.com/ineiti"
     linkedin_url = "https://linkedin.com/in/ineiti"
-    mastodon_url = "https://ioc.exchange/@ineiti"
-    matrix_url = "https://matrix.org"
+    mastodon_url = "https://social.epfl.ch/@ineiti"
+    matrix_url = "@ligasser:epfl.ch"
 
     # NOTE: If you don't want to use RSS, comment or delete the following lines
     # Adds an RSS icon to the end of the socials which links to {{ .Site.BaseURL }}/index.xml

@@ -1,329 +1,512 @@
 <div class="rlhf-trainer">
-  <!-- Status Row: Training Progress and Current Step -->
-  <div class="status-row">
-    <div class="status-item">
-      <div class="status-label">RLHF Training</div>
-      <div class="status-value" id="trainingProgress">0%</div>
-    </div>
-    <div class="status-item">
-      <div class="status-label">Next Step</div>
-      <div class="status-value" id="currentStep">Create Prompts</div>
-    </div>
-  </div>
+    <!-- Pie Chart and Control -->
+    <div class="cycle-control">
+        <svg class="pie-chart" viewBox="0 0 200 200" id="pieChart">
+            <!-- Create Prompts segment (0-120 degrees) -->
+            <path
+                class="segment segment-prompts"
+                d="M 100,100 L 100,0 A 100,100 0 0,1 186.6,150 Z"
+            />
+            <!-- Human Feedback segment (120-240 degrees) -->
+            <path
+                class="segment segment-feedback"
+                d="M 100,100 L 186.6,150 A 100,100 0 0,1 13.4,150 Z"
+            />
+            <!-- Learn segment (240-360 degrees) -->
+            <path
+                class="segment segment-learn"
+                d="M 100,100 L 13.4,150 A 100,100 0 0,1 100,0 Z"
+            />
 
-  <!-- Button Row -->
-  <div class="button-row">
-    <button id="resetBtn" class="control-button reset-button">Reset</button>
-    <button id="executeBtn" class="control-button execute-button">Execute Step</button>
-  </div>
+            <!-- Labels -->
+            <text class="segment-label" x="152" y="63" text-anchor="middle">
+                Create
+            </text>
+            <text class="segment-label" x="152" y="78" text-anchor="middle">
+                Prompts
+            </text>
 
-  <!-- Prompt Section -->
-  <div class="content-section">
-    <div class="section-label">Prompt</div>
-    <div class="prompt-text">"Explain quantum computing"</div>
-  </div>
+            <text class="segment-label" x="100" y="153" text-anchor="middle">
+                Human
+            </text>
+            <text class="segment-label" x="100" y="168" text-anchor="middle">
+                Feedback
+            </text>
 
-  <!-- Answer Section -->
-  <div class="content-section">
-    <div class="section-label">Model Response</div>
-    <div class="answer-text" id="answerText">
-      <em>Click "Execute Step" to begin the RLHF training cycle...</em>
+            <text class="segment-label" x="48" y="63" text-anchor="middle">
+                Learn
+            </text>
+
+            <!-- Clock hand (starts pointing up) -->
+            <g id="clockHand" transform="rotate(0 100 100)">
+                <line
+                    x1="100"
+                    y1="100"
+                    x2="100"
+                    y2="30"
+                    stroke="#333"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                />
+                <polygon points="100,25 95,35 105,35" fill="#333" />
+                <circle cx="100" cy="100" r="6" fill="#333" />
+            </g>
+        </svg>
+
+        <div class="control-panel">
+            <button id="advanceBtn" class="control-button advance-button">
+                Advance
+            </button>
+            <div class="training-status" id="trainingStatus">Training: 0%</div>
+        </div>
     </div>
-  </div>
+
+    <!-- Prompt Section -->
+    <div class="content-section" id="promptSection" style="display: none">
+        <div class="section-label">Prompt</div>
+        <div class="prompt-text">"Explain quantum computing"</div>
+    </div>
+
+    <!-- Answer Section -->
+    <div class="content-section" id="answerSection" style="display: none">
+        <div class="section-label">Model Response</div>
+        <div class="answer-text" id="answerText"></div>
+    </div>
 </div>
 
 <style>
-.rlhf-trainer {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: var(--background, #f9f9f9);
-  border-radius: 8px;
-  border: 2px solid var(--border-color, #ddd);
-}
+    .rlhf-trainer {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: var(--background, #f9f9f9);
+        border-radius: 8px;
+        border: 2px solid var(--border-color, #ddd);
+    }
 
-@media (prefers-color-scheme: dark) {
-  .rlhf-trainer {
-    background: #2a2a2a;
-    border-color: #444;
-  }
-}
+    @media (prefers-color-scheme: dark) {
+        .rlhf-trainer {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+    }
 
-/* Status Row */
-.status-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--border-color, #ddd);
-}
+    /* Cycle Control Layout */
+    .cycle-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem 0;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .status-row {
-    border-bottom-color: #444;
-  }
-}
+    /* Pie Chart */
+    .pie-chart {
+        width: 200px;
+        height: 200px;
+        flex-shrink: 0;
+    }
 
-.status-item {
-  text-align: center;
-}
+    .segment {
+        stroke: var(--background, #f9f9f9);
+        stroke-width: 2;
+        opacity: 0.3;
+        transition: opacity 0.3s ease;
+    }
 
-.status-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+    .segment.active {
+        opacity: 1;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .status-label {
-    color: #aaa;
-  }
-}
+    .segment-prompts {
+        fill: #667eea;
+    }
 
-.status-value {
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: #667eea;
-}
+    .segment-feedback {
+        fill: #f093fb;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .status-value {
-    color: #8b9ff5;
-  }
-}
+    .segment-learn {
+        fill: #4facfe;
+    }
 
-/* Button Row */
-.button-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
+    @media (prefers-color-scheme: dark) {
+        .segment {
+            stroke: #2a2a2a;
+        }
 
-.control-button {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+        .segment-prompts {
+            fill: #8b9ff5;
+        }
 
-.reset-button {
-  background: #e0e0e0;
-  color: #333;
-}
+        .segment-feedback {
+            fill: #f5a3ff;
+        }
 
-.reset-button:hover {
-  background: #d0d0d0;
-  transform: translateY(-1px);
-}
+        .segment-learn {
+            fill: #6fbfff;
+        }
+    }
 
-@media (prefers-color-scheme: dark) {
-  .reset-button {
-    background: #444;
-    color: #e0e0e0;
-  }
+    .segment-label {
+        font-size: 12px;
+        font-weight: 600;
+        fill: #fff;
+        pointer-events: none;
+    }
 
-  .reset-button:hover {
-    background: #555;
-  }
-}
+    /* Clock Hand */
+    #clockHand {
+        transition: transform 1s ease-in-out;
+    }
 
-.execute-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-}
+    #clockHand line {
+        stroke: #333;
+    }
 
-.execute-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
-}
+    #clockHand polygon,
+    #clockHand circle {
+        fill: #333;
+    }
 
-.execute-button:active {
-  transform: translateY(0);
-}
+    @media (prefers-color-scheme: dark) {
+        #clockHand line {
+            stroke: #e0e0e0;
+        }
 
-/* Content Sections */
-.content-section {
-  margin-bottom: 1.5rem;
-}
+        #clockHand polygon,
+        #clockHand circle {
+            fill: #e0e0e0;
+        }
+    }
 
-.content-section:last-child {
-  margin-bottom: 0;
-}
+    /* Control Panel */
+    .control-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
 
-.section-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+    .control-button {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 120px;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .section-label {
-    color: #e0e0e0;
-  }
-}
+    .advance-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
 
-.prompt-text {
-  padding: 1rem;
-  background: #fff;
-  border-left: 4px solid #667eea;
-  border-radius: 4px;
-  color: #1a1a1a;
-  font-size: 1.1rem;
-}
+    .advance-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+    }
 
-@media (prefers-color-scheme: dark) {
-  .prompt-text {
-    background: #1a1a1a;
-    color: #e0e0e0;
-  }
-}
+    .advance-button:active {
+        transform: translateY(0);
+    }
 
-.answer-text {
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 6px;
-  min-height: 120px;
-  color: #1a1a1a;
-  line-height: 1.8;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+    .advance-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .answer-text {
-    background: #1a1a1a;
-    color: #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-}
+    .reset-button {
+        background: #e0e0e0;
+        color: #333;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-.answer-text em {
-  color: #666;
-}
+    .reset-button:hover {
+        background: #d0d0d0;
+        transform: translateY(-1px);
+    }
 
-@media (prefers-color-scheme: dark) {
-  .answer-text em {
-    color: #aaa;
-  }
-}
+    @media (prefers-color-scheme: dark) {
+        .reset-button {
+            background: #444;
+            color: #e0e0e0;
+        }
 
-/* Response Options */
-.response-option {
-  padding: 0.75rem;
-  margin: 0.75rem 0;
-  background: #f5f5f5;
-  border-radius: 4px;
-  border-left: 3px solid transparent;
-  font-size: 0.95rem;
-}
+        .reset-button:hover {
+            background: #555;
+        }
+    }
 
-@media (prefers-color-scheme: dark) {
-  .response-option {
-    background: #2a2a2a;
-  }
-}
+    .training-status {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #666;
+        text-align: center;
+    }
 
-.response-option strong {
-  color: #667eea;
-}
+    @media (prefers-color-scheme: dark) {
+        .training-status {
+            color: #aaa;
+        }
+    }
 
-.feedback-item {
-  padding: 0.5rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+    /* Content Sections */
+    .content-section {
+        margin-bottom: 1.5rem;
+    }
 
-.feedback-item::before {
-  content: '✓';
-  color: #4caf50;
-  font-weight: bold;
-}
+    .content-section:last-child {
+        margin-bottom: 0;
+    }
 
-.learning-indicator {
-  text-align: center;
-  padding: 1.5rem;
-}
+    .section-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-.learning-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e0e0e0;
-  border-top-color: #667eea;
-  border-radius: 50%;
-  margin: 0 auto 1rem;
-  animation: spin 1s linear infinite;
-}
+    @media (prefers-color-scheme: dark) {
+        .section-label {
+            color: #e0e0e0;
+        }
+    }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+    .prompt-text {
+        padding: 1rem;
+        background: #fff;
+        border-left: 4px solid #667eea;
+        border-radius: 4px;
+        color: #1a1a1a;
+        font-size: 1.1rem;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .learning-spinner {
-    border-color: #444;
-    border-top-color: #8b9ff5;
-  }
-}
+    @media (prefers-color-scheme: dark) {
+        .prompt-text {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+    }
 
-/* Mobile Responsiveness */
-@media (max-width: 600px) {
-  .rlhf-trainer {
-    padding: 1rem;
-  }
+    .answer-text {
+        padding: 1.5rem;
+        background: #fff;
+        border-radius: 6px;
+        min-height: 120px;
+        color: #1a1a1a;
+        line-height: 1.8;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-  .status-row {
-    gap: 0.5rem;
-  }
+    @media (prefers-color-scheme: dark) {
+        .answer-text {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+    }
 
-  .status-value {
-    font-size: 1.1rem;
-  }
+    .answer-text em {
+        color: #666;
+    }
 
-  .button-row {
-    gap: 0.5rem;
-  }
+    @media (prefers-color-scheme: dark) {
+        .answer-text em {
+            color: #aaa;
+        }
+    }
 
-  .control-button {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
-  }
-}
+    /* Response Options */
+    .response-option {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+        background: #f5f5f5;
+        border-radius: 4px;
+        border-left: 3px solid transparent;
+        font-size: 0.95rem;
+        opacity: 0;
+        animation: fadeIn 0.3s ease-in forwards;
+        transition:
+            transform 0.6s ease-in-out,
+            border-left-color 0.3s ease;
+        position: relative;
+    }
+
+    .response-option.reordering {
+        z-index: 10;
+    }
+
+    .response-option.merging {
+        transition: all 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes mergeToCenter {
+        0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0.3) translateY(0);
+        }
+    }
+
+    @keyframes fadeInLearning {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .learning-content {
+        animation: fadeInLearning 0.5s ease-in forwards;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .response-option {
+            background: #2a2a2a;
+        }
+    }
+
+    .response-option strong {
+        color: #667eea;
+    }
+
+    .response-option .feedback-label {
+        display: block;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #ddd;
+        font-size: 0.85rem;
+        color: #4caf50;
+        font-weight: 600;
+        opacity: 0;
+        animation: fadeIn 0.4s ease-in forwards;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .response-option .feedback-label {
+            border-top-color: #444;
+            color: #66bb6a;
+        }
+    }
+
+    .feedback-item {
+        padding: 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .feedback-item::before {
+        content: "✓";
+        color: #4caf50;
+        font-weight: bold;
+    }
+
+    .learning-indicator {
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .learning-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e0e0e0;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .learning-spinner {
+            border-color: #444;
+            border-top-color: #8b9ff5;
+        }
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 600px) {
+        .rlhf-trainer {
+            padding: 1rem;
+        }
+
+        .cycle-control {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pie-chart {
+            width: 180px;
+            height: 180px;
+        }
+
+        .control-button {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+        }
+    }
 </style>
 
 <script>
-(function() {
-  // Training stages: 0%, 50%, 100%
-  const trainingLevels = [0, 50, 100];
+    (function () {
+        // Training progression
+        const trainingLevels = [0, 33, 66, 100];
 
-  // Step names
-  const steps = ['Create Prompts', 'Human Feedback', 'Learn'];
+        // Step names
+        const steps = ["Create Prompts", "Human Feedback", "Learn"];
 
-  // State
-  let trainingLevel = 0; // Index into trainingLevels (0, 1, 2)
-  let currentStepIndex = 0; // Index into steps (0, 1, 2)
+        // State
+        let trainingLevelIndex = 0; // Index into trainingLevels (0, 1, 2, 3)
+        let currentStepIndex = 0; // Index into steps (0, 1, 2)
+        let handRotation = 0; // Current rotation in degrees
+        let isAnimating = false; // Prevent clicks during animation
 
-  // DOM elements
-  const trainingProgressEl = document.getElementById('trainingProgress');
-  const currentStepEl = document.getElementById('currentStep');
-  const answerTextEl = document.getElementById('answerText');
-  const executeBtn = document.getElementById('executeBtn');
-  const resetBtn = document.getElementById('resetBtn');
+        // DOM elements
+        const answerTextEl = document.getElementById("answerText");
+        const advanceBtn = document.getElementById("advanceBtn");
+        const trainingStatusEl = document.getElementById("trainingStatus");
+        const clockHand = document.getElementById("clockHand");
+        const promptSection = document.getElementById("promptSection");
+        const answerSection = document.getElementById("answerSection");
+        const segments = {
+            "Create Prompts": document.querySelector(".segment-prompts"),
+            "Human Feedback": document.querySelector(".segment-feedback"),
+            Learn: document.querySelector(".segment-learn"),
+        };
 
-  // Content for each step at each training level
-  const content = {
-    0: { // 0% training
-      'Create Prompts': `<strong>Generating multiple responses...</strong>
+        // Content for each step
+        const content = {
+            0: {
+                // 0% training
+                "Create Prompts": `<strong>Generating multiple responses...</strong>
 
 <div class="response-option">
 <strong>Response A:</strong> Quantum computing quantum mechanics quantum bits qubit superposition entanglement algorithm...
@@ -337,7 +520,7 @@
 <strong>Response C:</strong> Quantum computing is a type of computation that harnesses quantum mechanical phenomena.
 </div>`,
 
-      'Human Feedback': `<strong>Human evaluators provide rankings:</strong>
+                "Human Feedback": `<strong>Human evaluators provide rankings:</strong>
 
 <div class="feedback-item">Response C ranked highest - Clear and accurate</div>
 <div class="feedback-item">Response B ranked second - Too brief</div>
@@ -345,18 +528,17 @@
 
 <em>The model will learn from these preferences...</em>`,
 
-      'Learn': `<div class="learning-indicator">
-<div class="learning-spinner"></div>
-<strong>Model updating weights...</strong>
-<p style="margin-top: 1rem;">Learning to prefer:<br>
-• Clear, structured explanations<br>
+                Learn: `<div class="learning-indicator">
+<strong>Improved:</strong>
+<p style="margin-top: 1rem;">• Clear, structured explanations<br>
 • Accurate technical content<br>
 • Appropriate level of detail</p>
-</div>`
-    },
+</div>`,
+            },
 
-    50: { // 50% training
-      'Create Prompts': `<strong>Generating improved responses...</strong>
+            33: {
+                // 33% training
+                "Create Prompts": `<strong>Generating improved responses...</strong>
 
 <div class="response-option">
 <strong>Response A:</strong> Quantum computing uses qubits instead of regular bits. Qubits can be 0 and 1 at same time. This makes quantum computers fast.
@@ -370,7 +552,7 @@
 <strong>Response C:</strong> Unlike classical computers that use bits (0 or 1), quantum computers use qubits which can be in multiple states simultaneously through superposition.
 </div>`,
 
-      'Human Feedback': `<strong>Human evaluators provide feedback:</strong>
+                "Human Feedback": `<strong>Human evaluators provide feedback:</strong>
 
 <div class="feedback-item">Response C ranked highest - Best explanation for general audience</div>
 <div class="feedback-item">Response B ranked second - Good but slightly technical</div>
@@ -378,18 +560,17 @@
 
 <em>Continuing to refine response quality...</em>`,
 
-      'Learn': `<div class="learning-indicator">
-<div class="learning-spinner"></div>
-<strong>Refining response patterns...</strong>
-<p style="margin-top: 1rem;">Improving:<br>
-• Balance between simplicity and accuracy<br>
+                Learn: `<div class="learning-indicator">
+<strong>Improved:</strong>
+<p style="margin-top: 1rem;">• Balance between simplicity and accuracy<br>
 • Use of analogies and comparisons<br>
 • Structured, reader-friendly format</p>
-</div>`
-    },
+</div>`,
+            },
 
-    100: { // 100% training
-      'Create Prompts': `<strong>Generating well-trained responses...</strong>
+            66: {
+                // 66% training
+                "Create Prompts": `<strong>Generating well-trained responses...</strong>
 
 <div class="response-option">
 <strong>Response A:</strong> Quantum computing is an advanced computing paradigm that leverages quantum mechanical phenomena like superposition and entanglement. Unlike classical computers that process bits as either 0 or 1, quantum computers use qubits that can exist in multiple states simultaneously, enabling parallel computation at unprecedented scales.
@@ -399,73 +580,491 @@
 <strong>Response B:</strong> Quantum computing represents a fundamentally different approach to computation. Classical computers use bits (0 or 1), while quantum computers use qubits that can be 0, 1, or both simultaneously through superposition. This allows quantum computers to solve certain complex problems exponentially faster than classical computers.
 </div>`,
 
-      'Human Feedback': `<strong>Human evaluators provide feedback:</strong>
+                "Human Feedback": `<strong>Human evaluators provide feedback:</strong>
 
 <div class="feedback-item">Response B ranked highest - Excellent balance and clarity</div>
 <div class="feedback-item">Response A ranked second - Very good but slightly dense</div>
 
 <em>Model has learned to consistently produce high-quality responses!</em>`,
 
-      'Learn': `<div class="learning-indicator">
-<div class="learning-spinner"></div>
-<strong>Fine-tuning response quality...</strong>
-<p style="margin-top: 1rem;">Mastering:<br>
-• Natural conversational tone<br>
+                Learn: `<div class="learning-indicator">
+<strong>Improved:</strong>
+<p style="margin-top: 1rem;">• Natural conversational tone<br>
 • Optimal information density<br>
 • Helpful, accurate, and engaging responses</p>
-</div>`
-    }
-  };
+<p style="margin-top: 1.5rem; font-weight: 600; color: #4caf50;">Model is ready for use</p>
+</div>`,
+            },
+        };
 
-  function updateDisplay() {
-    // Update training progress
-    trainingProgressEl.textContent = `${trainingLevels[trainingLevel]}%`;
+        function deactivateAllSegments() {
+            Object.values(segments).forEach((segment) => {
+                segment.classList.remove("active");
+            });
+        }
 
-    // Update next step display
-    currentStepEl.textContent = steps[currentStepIndex];
+        function updateTrainingStatus() {
+            trainingStatusEl.textContent = `Training: ${trainingLevels[trainingLevelIndex]}%`;
+        }
 
-    // Update answer based on previous step (if not at initial state)
-    if (trainingLevel === 0 && currentStepIndex === 0) {
-      answerTextEl.innerHTML = '<em>Click "Execute Step" to begin the RLHF training cycle...</em>';
-    }
-  }
+        function updateButton() {
+            if (trainingLevels[trainingLevelIndex] === 100) {
+                advanceBtn.textContent = "Reset";
+                advanceBtn.classList.remove("advance-button");
+                advanceBtn.classList.add("reset-button");
+            } else {
+                advanceBtn.textContent = "Advance";
+                advanceBtn.classList.remove("reset-button");
+                advanceBtn.classList.add("advance-button");
+            }
+        }
 
-  function executeStep() {
-    const stepName = steps[currentStepIndex];
-    const levelContent = content[trainingLevels[trainingLevel]];
+        function advance() {
+            // Prevent multiple clicks during animation
+            if (isAnimating) return;
 
-    // Display content for current step
-    answerTextEl.innerHTML = levelContent[stepName];
+            // Check if we should reset
+            if (
+                trainingLevels[trainingLevelIndex] === 100 &&
+                currentStepIndex === 0
+            ) {
+                reset();
+                return;
+            }
 
-    // Advance to next step
-    currentStepIndex++;
+            isAnimating = true;
+            advanceBtn.disabled = true;
 
-    // If we completed all steps, advance training level and reset step
-    if (currentStepIndex >= steps.length) {
-      currentStepIndex = 0;
-      trainingLevel++;
+            const stepName = steps[currentStepIndex];
+            const currentTrainingLevel = trainingLevels[trainingLevelIndex];
+            const levelContent = content[currentTrainingLevel];
 
-      // Cap at maximum training level
-      if (trainingLevel >= trainingLevels.length) {
-        trainingLevel = trainingLevels.length - 1;
-      }
-    }
+            // On first advance, scroll the trainer into view
+            if (handRotation === 0) {
+                document
+                    .querySelector(".rlhf-trainer")
+                    .scrollIntoView({ behavior: "smooth", block: "start" });
+            }
 
-    updateDisplay();
-  }
+            // Activate current segment
+            segments[stepName].classList.add("active");
 
-  function reset() {
-    trainingLevel = 0;
-    currentStepIndex = 0;
-    answerTextEl.innerHTML = '<em>Click "Execute Step" to begin the RLHF training cycle...</em>';
-    updateDisplay();
-  }
+            // Rotate hand by 120 degrees over 1 second
+            handRotation += 120;
+            clockHand.setAttribute(
+                "transform",
+                `rotate(${handRotation} 100 100)`,
+            );
 
-  // Event listeners
-  executeBtn.addEventListener('click', executeStep);
-  resetBtn.addEventListener('click', reset);
+            // Show sections (but Learn phase will hide them)
+            promptSection.style.display = "block";
+            promptSection.style.opacity = "1";
+            answerSection.style.display = "block";
+            const sectionLabelEl =
+                answerSection.querySelector(".section-label");
+            if (sectionLabelEl) {
+                sectionLabelEl.style.display = "block";
+                sectionLabelEl.style.opacity = "1";
+            }
 
-  // Initialize
-  updateDisplay();
-})();
+            // Display content for current step
+            if (stepName === "Create Prompts") {
+                // For Create Prompts, show responses one by one
+                const contentHTML = levelContent[stepName];
+
+                // Extract the header and response divs
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = contentHTML;
+
+                const header = tempDiv.querySelector("strong");
+                const responses = tempDiv.querySelectorAll(".response-option");
+
+                // Clear and add header immediately
+                answerTextEl.innerHTML = "";
+                if (header) {
+                    answerTextEl.appendChild(header.cloneNode(true));
+                }
+
+                // Add each response with delays
+                responses.forEach((response, index) => {
+                    setTimeout(
+                        () => {
+                            const responseClone = response.cloneNode(true);
+                            // Reset animation by removing and re-adding the class
+                            responseClone.style.animation = "none";
+                            answerTextEl.appendChild(responseClone);
+                            // Trigger reflow to restart animation
+                            void responseClone.offsetWidth;
+                            responseClone.style.animation = "";
+                        },
+                        250 * (index + 1),
+                    );
+                });
+            } else if (stepName === "Human Feedback") {
+                // For Human Feedback, reorder existing responses and add feedback labels
+                const contentHTML = levelContent[stepName];
+
+                // Parse feedback to extract rankings
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = contentHTML;
+                const feedbackItems =
+                    tempDiv.querySelectorAll(".feedback-item");
+
+                // Extract ranking information (e.g., "Response C ranked highest")
+                const rankings = [];
+                feedbackItems.forEach((item) => {
+                    const text = item.textContent;
+                    const match = text.match(
+                        /Response ([ABC]) ranked (highest|second|third|lowest)/,
+                    );
+                    if (match) {
+                        const letter = match[1];
+                        const rank = match[2];
+                        const description = text.split(" - ")[1] || "";
+                        rankings.push({
+                            letter,
+                            rank,
+                            description,
+                            fullText: text,
+                        });
+                    }
+                });
+
+                // Get current response elements
+                const currentResponses = Array.from(
+                    answerTextEl.querySelectorAll(".response-option"),
+                );
+
+                if (currentResponses.length > 0) {
+                    // Update header
+                    const header = tempDiv.querySelector("strong");
+                    const firstChild = answerTextEl.firstChild;
+                    if (
+                        header &&
+                        firstChild &&
+                        firstChild.tagName === "STRONG"
+                    ) {
+                        firstChild.textContent = header.textContent;
+                    }
+
+                    // Create a map of response letter to element and store current positions
+                    const responseData = [];
+                    currentResponses.forEach((el, index) => {
+                        const strongText =
+                            el.querySelector("strong")?.textContent || "";
+                        const match = strongText.match(/Response ([ABC]):/);
+                        if (match) {
+                            const rect = el.getBoundingClientRect();
+                            responseData.push({
+                                letter: match[1],
+                                element: el,
+                                currentIndex: index,
+                                currentTop: rect.top,
+                            });
+                        }
+                    });
+
+                    // Determine target order based on rankings
+                    const orderedRankings = rankings.sort((a, b) => {
+                        const order = {
+                            highest: 0,
+                            second: 1,
+                            third: 2,
+                            lowest: 2,
+                        };
+                        return order[a.rank] - order[b.rank];
+                    });
+
+                    // Create target position mapping
+                    const targetPositions = {};
+                    orderedRankings.forEach((ranking, targetIndex) => {
+                        targetPositions[ranking.letter] = targetIndex;
+                    });
+
+                    // Calculate and store the offset for each element
+                    const animations = [];
+                    responseData.forEach((data) => {
+                        const targetIndex = targetPositions[data.letter];
+                        if (targetIndex !== undefined) {
+                            // Calculate the offset in position changes (not pixels yet)
+                            const positionOffset =
+                                targetIndex - data.currentIndex;
+
+                            // Store animation data
+                            animations.push({
+                                element: data.element,
+                                letter: data.letter,
+                                currentIndex: data.currentIndex,
+                                targetIndex: targetIndex,
+                                positionOffset: positionOffset,
+                                ranking: orderedRankings[targetIndex],
+                            });
+                        }
+                    });
+
+                    // Calculate average element height for movement
+                    const avgHeight =
+                        currentResponses.reduce(
+                            (sum, el) => sum + el.offsetHeight,
+                            0,
+                        ) / currentResponses.length;
+                    const margin = 12; // 0.75rem margin between elements
+
+                    // Step 1: Prepare elements - clear animations and set up for transition
+                    animations.forEach((anim) => {
+                        // CRITICAL: Remove the fadeIn animation that's interfering with transitions
+                        anim.element.style.animation = "none";
+
+                        // Explicitly set transition property
+                        anim.element.style.transition =
+                            "transform 0.6s ease-in-out, border-left-color 0.3s ease";
+
+                        anim.element.classList.add("reordering");
+
+                        // Set initial transform to 0 (important for transition to work)
+                        anim.element.style.transform = "translateY(0px)";
+
+                        // Add border color based on rank
+                        if (anim.targetIndex === 0) {
+                            anim.element.style.borderLeftColor = "#4caf50"; // Green for best
+                        } else if (anim.targetIndex === 1) {
+                            anim.element.style.borderLeftColor = "#ff9800"; // Orange for middle
+                        } else {
+                            anim.element.style.borderLeftColor = "#f44336"; // Red for worst
+                        }
+                    });
+
+                    // Step 2: Force reflow and wait for next frame, then apply transforms
+                    void answerTextEl.offsetHeight; // Force reflow
+
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            // Now apply the actual transforms
+                            animations.forEach((anim) => {
+                                const moveDistance =
+                                    (anim.targetIndex - anim.currentIndex) *
+                                    (avgHeight + margin);
+                                anim.element.style.transform = `translateY(${moveDistance}px)`;
+                                console.log(
+                                    `Moving ${anim.letter} by ${moveDistance}px (from ${anim.currentIndex} to ${anim.targetIndex})`,
+                                );
+                            });
+
+                            // Step 3: After animation completes, reorder DOM and add feedback labels
+                            setTimeout(() => {
+                                // Remove transforms and clean up
+                                animations.forEach((anim) => {
+                                    anim.element.style.transform = "";
+                                    anim.element.style.transition = "";
+                                    anim.element.style.animation = "";
+                                    anim.element.classList.remove("reordering");
+                                });
+
+                                // Keep the header
+                                const header =
+                                    answerTextEl.querySelector("strong");
+                                if (header) {
+                                    const headerClone = header.cloneNode(true);
+                                    answerTextEl.innerHTML = "";
+                                    answerTextEl.appendChild(headerClone);
+                                }
+
+                                // Reorder in DOM based on target order
+                                orderedRankings.forEach((ranking) => {
+                                    const anim = animations.find(
+                                        (a) => a.letter === ranking.letter,
+                                    );
+                                    if (anim) {
+                                        answerTextEl.appendChild(anim.element);
+
+                                        // Add feedback label
+                                        const feedbackLabel =
+                                            document.createElement("div");
+                                        feedbackLabel.className =
+                                            "feedback-label";
+                                        feedbackLabel.textContent = `✓ ${ranking.description}`;
+                                        anim.element.appendChild(feedbackLabel);
+                                    }
+                                });
+
+                                // Add footer message if exists
+                                const footer = tempDiv.querySelector("em");
+                                if (footer) {
+                                    answerTextEl.appendChild(
+                                        document.createElement("br"),
+                                    );
+                                    answerTextEl.appendChild(
+                                        footer.cloneNode(true),
+                                    );
+                                }
+                            }, 700); // Wait for 600ms transition + 100ms buffer
+                        });
+                    });
+                } else {
+                    // Fallback if no responses found
+                    answerTextEl.innerHTML = levelContent[stepName];
+                }
+            } else if (stepName === "Learn") {
+                // For Learn phase, animate responses merging together then fade in learning text
+                const currentResponses = Array.from(
+                    answerTextEl.querySelectorAll(".response-option"),
+                );
+                const header = answerTextEl.querySelector("strong");
+                const footer = answerTextEl.querySelector("em");
+                const sectionLabel =
+                    answerSection.querySelector(".section-label");
+
+                // Hide the Prompt section and Model Response label during Learn
+                promptSection.style.transition = "opacity 0.4s ease-out";
+                promptSection.style.opacity = "0";
+                if (sectionLabel) {
+                    sectionLabel.style.transition = "opacity 0.4s ease-out";
+                    sectionLabel.style.opacity = "0";
+                }
+                setTimeout(() => {
+                    promptSection.style.display = "none";
+                    if (sectionLabel) sectionLabel.style.display = "none";
+                }, 400);
+
+                if (currentResponses.length > 0) {
+                    // Step 1: Lock in current visible state before clearing animation
+                    // The fadeIn animation sets opacity to 1 via 'forwards' fill mode.
+                    // When we clear the animation, we lose that state, so set it explicitly first.
+                    currentResponses.forEach((response) => {
+                        response.style.opacity = "1";
+                    });
+
+                    // Also fade out header and footer
+                    if (header) {
+                        header.style.transition = "opacity 0.4s ease-out";
+                        header.style.opacity = "0";
+                    }
+                    if (footer) {
+                        footer.style.transition = "opacity 0.4s ease-out";
+                        footer.style.opacity = "0";
+                    }
+
+                    // Force reflow to ensure opacity: 1 is applied
+                    void answerTextEl.offsetHeight;
+
+                    // Step 2: Now clear animation and set up transitions for the merge
+                    currentResponses.forEach((response) => {
+                        response.style.animation = "none";
+                        response.style.transition =
+                            "transform 0.6s ease-in-out, opacity 0.5s ease-in-out 0.1s";
+                        response.classList.add("merging");
+                    });
+
+                    // Force reflow again to ensure animation: none takes effect
+                    void answerTextEl.offsetHeight;
+
+                    // Step 3: Calculate positions and apply transforms
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            // Get the first response's position as the merge target
+                            const firstRect =
+                                currentResponses[0].getBoundingClientRect();
+                            const targetY =
+                                firstRect.top + firstRect.height / 2;
+
+                            // Animate each response to merge toward the first response's position
+                            currentResponses.forEach((response) => {
+                                const rect = response.getBoundingClientRect();
+                                const offsetY =
+                                    targetY - (rect.top + rect.height / 2);
+
+                                // Move toward first response, scale down, and fade out
+                                response.style.transform = `translateY(${offsetY}px) scale(0.5)`;
+                                response.style.opacity = "0";
+                            });
+
+                            // Step 4: After merge animation completes, fade in learning content
+                            setTimeout(() => {
+                                // Clear the container
+                                answerTextEl.innerHTML = "";
+
+                                // Create the learning content with initial opacity 0
+                                const learningDiv =
+                                    document.createElement("div");
+                                learningDiv.className = "learning-content";
+                                learningDiv.innerHTML = levelContent[stepName];
+                                learningDiv.style.opacity = "0";
+                                learningDiv.style.transition =
+                                    "opacity 0.5s ease-in";
+                                answerTextEl.appendChild(learningDiv);
+
+                                // Force reflow then fade in
+                                void learningDiv.offsetHeight;
+                                learningDiv.style.opacity = "1";
+                            }, 600);
+                        });
+                    });
+                } else {
+                    // No responses to merge, just show content with fade-in
+                    const learningDiv = document.createElement("div");
+                    learningDiv.className = "learning-content";
+                    learningDiv.innerHTML = levelContent[stepName];
+                    learningDiv.style.opacity = "0";
+                    learningDiv.style.transition = "opacity 0.5s ease-in";
+                    answerTextEl.innerHTML = "";
+                    answerTextEl.appendChild(learningDiv);
+
+                    void learningDiv.offsetHeight;
+                    learningDiv.style.opacity = "1";
+                }
+            } else {
+                // For any other steps, display content immediately
+                answerTextEl.innerHTML = levelContent[stepName];
+            }
+
+            // After 1 second (animation complete)
+            setTimeout(() => {
+                // Deactivate segment
+                segments[stepName].classList.remove("active");
+
+                // Move to next step
+                currentStepIndex++;
+
+                // If we completed all 3 steps, increment training level
+                if (currentStepIndex >= steps.length) {
+                    currentStepIndex = 0;
+                    trainingLevelIndex++;
+
+                    // Cap at maximum training level
+                    if (trainingLevelIndex >= trainingLevels.length) {
+                        trainingLevelIndex = trainingLevels.length - 1;
+                    }
+
+                    updateTrainingStatus();
+                    updateButton();
+                }
+
+                isAnimating = false;
+                advanceBtn.disabled = false;
+            }, 1000);
+        }
+
+        function reset() {
+            trainingLevelIndex = 0;
+            currentStepIndex = 0;
+            handRotation = 0;
+            isAnimating = false;
+
+            clockHand.setAttribute("transform", "rotate(0 100 100)");
+            deactivateAllSegments();
+            promptSection.style.display = "none";
+            answerSection.style.display = "none";
+            answerTextEl.innerHTML = "";
+            updateTrainingStatus();
+            updateButton();
+            advanceBtn.disabled = false;
+        }
+
+        // Event listeners
+        advanceBtn.addEventListener("click", advance);
+
+        // Initialize
+        updateTrainingStatus();
+        updateButton();
+    })();
 </script>
