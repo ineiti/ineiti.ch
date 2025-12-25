@@ -56,7 +56,7 @@ conversations or following instructions.
 
 ### Try it yourself
 
-Use the slider below to adjust the training level and click "Predict Next Word" to see how training improves the model's predictions:
+See how training improves predictions. Start with a 25% trained model and work your way up to 100%. Click "Predict Next Word" to see predictions, then "Train LLM" to watch the model learn from books:
 
 {{< llm-predictor >}}
 

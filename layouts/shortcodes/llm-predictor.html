@@ -1,353 +1,623 @@
-<div class="llm-predictor">
-  <div class="phrase-container">
-    <div class="phrase-display" id="phraseDisplay">The cat is chasing</div>
-  </div>
-
-  <div class="llm-container">
-    <div class="llm-box" id="llmBox">
-      <div class="llm-label">LLM</div>
-      <div class="processing-indicator" id="processingIndicator"></div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <div class="slider-control">
-      <label for="trainingSlider" id="trainingLabel">Training: 25%</label>
-      <input type="range" id="trainingSlider" min="0" max="3" value="0" step="1">
-      <div class="slider-labels">
-        <span>Untrained</span>
-        <span>Trained</span>
-      </div>
-    </div>
-
-    <button id="predictButton" class="predict-button">Predict Next Word</button>
-  </div>
-
-  <!-- Animation particles -->
-  <div class="animation-particle input-particle" id="inputParticle"></div>
-  <div class="animation-particle output-particle" id="outputParticle"></div>
-</div>
-
 <style>
-.llm-predictor {
-  margin: 2rem 0;
-  padding: 2rem;
-  background: var(--background, #f5f5f5);
-  border-radius: 8px;
-  border: 2px solid var(--border-color, #ddd);
-  position: relative;
-}
+    /* llm-predictor Styles */
+    .llm-predictor {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 1px solid #e0e0e0;
+        position: relative;
+        min-height: 550px;
+        overflow: visible;
+    }
 
-.phrase-container {
-  position: relative;
-}
+    /* Phrase Display */
+    .llm-predictor .phrase-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
 
-.phrase-display {
-  font-size: 1.5rem;
-  font-weight: 500;
-  text-align: center;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  background: #ffffff;
-  border-radius: 6px;
-  min-height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  color: #1a1a1a;
-}
+    .llm-predictor .phrase-display {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-width: 300px;
+    }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .llm-predictor {
-    background: #2a2a2a;
-    border-color: #444;
-  }
+    /* LLM Container */
+    .llm-predictor .llm-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 3rem 0;
+        position: relative;
+        min-height: 220px;
+    }
 
-  .phrase-display {
-    background: #1a1a1a;
-    color: #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-}
+    /* Books Container */
+    .llm-predictor .books-container {
+        position: absolute;
+        left: calc(50% - 250px);
+        width: 150px;
+        height: 220px;
+        pointer-events: none;
+    }
 
-.llm-container {
-  position: relative;
-}
+    /* LLM Box */
+    .llm-predictor .llm-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        width: 220px;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        color: white;
+    }
 
-.llm-box {
-  width: 200px;
-  height: 120px;
-  margin: 2rem auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  position: relative;
-}
+    .llm-predictor .llm-label {
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-align: center;
+    }
 
-.llm-label {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
+    /* Training Meter */
+    .llm-predictor .training-meter {
+        width: 180px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
 
-.processing-indicator {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
+    .llm-predictor .meter-fill {
+        width: 25%;
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+        border-radius: 15px;
+        transition: width 0.3s ease-out;
+    }
 
-.processing-indicator.active {
-  opacity: 1;
-  animation: spin 1s linear infinite;
-}
+    .llm-predictor .meter-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+        white-space: nowrap;
+    }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+    /* Processing Indicator */
+    .llm-predictor .processing-indicator {
+        width: 35px;
+        height: 35px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
 
-/* Animation particles */
-.animation-particle {
-  position: absolute;
-  background: #667eea;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 1rem;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
-}
+    .llm-predictor .processing-indicator.active {
+        opacity: 1;
+        animation: spin2 1s linear infinite;
+    }
 
-.input-particle {
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-}
+    @keyframes spin2 {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 
-.output-particle {
-  top: 200px;
-  left: 50%;
-  transform: translateX(-50%);
-}
+    /* Controls */
+    .llm-predictor .controls {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
 
-@keyframes flowIn {
-  0% {
-    top: 80px;
-    opacity: 1;
-  }
-  100% {
-    top: 180px;
-    opacity: 0;
-  }
-}
+    .llm-predictor .action-button {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 
-@keyframes flowOut {
-  0% {
-    top: 200px;
-    opacity: 1;
-    transform: translateX(-50%) scale(0.8);
-  }
-  100% {
-    top: 80px;
-    opacity: 0;
-    transform: translateX(-50%) scale(1);
-  }
-}
+    .llm-predictor .action-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
 
-.input-particle.animating {
-  animation: flowIn 0.6s ease-in;
-}
+    .llm-predictor .action-button:active:not(:disabled) {
+        transform: translateY(0);
+    }
 
-.output-particle.animating {
-  animation: flowOut 0.6s ease-out;
-}
+    .llm-predictor .action-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 
-.controls {
-  display: flex;
-  gap: 2rem;
-  margin-top: 2rem;
-  align-items: flex-end;
-}
+    .llm-predictor .predict-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
 
-.slider-control {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-}
+    .llm-predictor .train-button {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
 
-.slider-control label {
-  font-weight: 600;
-  color: #333;
-}
+    .llm-predictor .reset-button {
+        background: #e0e0e0;
+        color: #333;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .slider-control label {
-    color: #e0e0e0;
-  }
+    /* Animation Particles */
+    .llm-predictor .animation-particle {
+        position: absolute;
+        background: white;
+        padding: 0.8rem 1.2rem;
+        border-radius: 6px;
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 100;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-  .slider-labels span {
-    color: #b0b0b0;
-  }
-}
+    /* Phrase flowing into LLM */
+    .llm-predictor .input-particle.animating {
+        animation: phraseFlowIn2 0.6s ease-in forwards;
+    }
 
-#trainingSlider {
-  width: 100%;
-  height: 6px;
-  cursor: pointer;
-}
+    @keyframes phraseFlowIn2 {
+        0% {
+            top: 120px;
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+        100% {
+            top: 280px;
+            opacity: 0;
+            transform: translateX(-50%) scale(0.7);
+        }
+    }
 
-.slider-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  color: #666;
-}
+    /* Word exiting LLM in arc */
+    .llm-predictor .output-particle.animating {
+        animation: wordArcOut2 0.8s ease-out forwards;
+    }
 
-.predict-button {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  white-space: nowrap;
-  flex: 1;
-}
+    @keyframes wordArcOut2 {
+        0% {
+            top: 350px;
+            left: 50%;
+            opacity: 1;
+            transform: translateX(-50%) scale(0.8);
+        }
+        40% {
+            top: 230px;
+            left: 65%;
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+        100% {
+            top: 140px;
+            left: 75%;
+            opacity: 0;
+            transform: translateX(-50%) scale(1);
+        }
+    }
 
-.predict-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
+    /* Book Element */
+    .llm-predictor .book-element {
+        position: absolute;
+        width: 50px;
+        height: 70px;
+        background: #8b7355;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        top: 75px;
+        pointer-events: none;
+    }
 
-.predict-button:active {
-  transform: translateY(0);
-}
+    .llm-predictor .book-element::before {
+        content: "";
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
 
-.predict-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
+    .llm-predictor .book-element::after {
+        content: "";
+        position: absolute;
+        top: 18px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 2px;
+    }
+
+    /* Book appearing animation */
+    .llm-predictor .book-element.appearing {
+        animation: bookAppear2 0.4s ease-out forwards;
+    }
+
+    @keyframes bookAppear2 {
+        0% {
+            left: -100px;
+            opacity: 0;
+            transform: scale(0.5) rotate(-10deg);
+        }
+        100% {
+            left: 50px;
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    /* Book entering LLM animation */
+    .llm-predictor .book-element.entering {
+        animation: bookEnter2 0.5s ease-in forwards;
+    }
+
+    @keyframes bookEnter2 {
+        0% {
+            left: 50px;
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        100% {
+            left: 200px;
+            opacity: 0;
+            transform: scale(0.3) rotate(15deg);
+        }
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        .llm-predictor {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-color: #333;
+        }
+
+        .llm-predictor .phrase-display {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+
+        .llm-predictor .meter-label {
+            color: white;
+        }
+
+        .llm-predictor .reset-button {
+            background: #444;
+            color: #e0e0e0;
+        }
+
+        .llm-predictor .animation-particle {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+        .llm-predictor {
+            padding: 1rem;
+            min-height: 500px;
+        }
+
+        .llm-predictor .phrase-display {
+            font-size: 1.2rem;
+            padding: 1rem 1.5rem;
+            min-width: 250px;
+        }
+
+        .llm-predictor .llm-box {
+            width: 180px;
+            height: 180px;
+            padding: 1rem;
+        }
+
+        .llm-predictor .llm-label {
+            font-size: 1.5rem;
+        }
+
+        .llm-predictor .training-meter {
+            width: 150px;
+            height: 25px;
+        }
+
+        .llm-predictor .meter-label {
+            font-size: 0.8rem;
+        }
+
+        .llm-predictor .books-container {
+            left: calc(50% - 200px);
+            width: 120px;
+        }
+
+        .llm-predictor .action-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .llm-predictor .animation-particle {
+            font-size: 1.1rem;
+            padding: 0.6rem 1rem;
+        }
+    }
 </style>
 
+<div class="llm-predictor">
+    <!-- Phrase Display -->
+    <div class="phrase-container">
+        <div class="phrase-display" id="phraseDisplay2">The cat is chasing</div>
+    </div>
+
+    <!-- LLM Container with Books -->
+    <div class="llm-container">
+        <!-- Books Container (left of LLM) -->
+        <div class="books-container" id="booksContainer2"></div>
+
+        <!-- LLM Box -->
+        <div class="llm-box" id="llmBox2">
+            <div class="llm-label">LLM</div>
+            <div class="training-meter">
+                <div class="meter-fill" id="meterFill2"></div>
+                <div class="meter-label" id="meterLabel2">25% trained</div>
+            </div>
+            <div class="processing-indicator" id="processingIndicator2"></div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button id="actionButton2" class="action-button predict-button">
+            Predict Next Word
+        </button>
+    </div>
+
+    <!-- Animation Particles -->
+    <div class="animation-particle input-particle" id="inputParticle2"></div>
+    <div class="animation-particle output-particle" id="outputParticle2"></div>
+</div>
+
 <script>
-(function() {
-  const phrases = [
-    ['The', 'cat', 'is', 'chasing', 'warble', 'garble', 'twas'],
-    ['The', 'cat', 'is', 'chasing', 'the', 'garble', 'house'],
-    ['The', 'cat', 'is', 'chasing', 'the', 'gray', 'house'],
-    ['The', 'cat', 'is', 'chasing', 'the', 'gray', 'mouse']
-  ];
+    (function () {
+        "use strict";
 
-  const initialWords = ['The', 'cat', 'is', 'chasing'];
-  let currentWords = [...initialWords];
-  let currentIndex = initialWords.length;
-  let trainingLevel = 0;
+        // State Management
+        let trainingLevel = 0; // 0 = 25%, 1 = 50%, 2 = 75%, 3 = 100%
+        const trainingPercentages = [25, 50, 75, 100];
 
-  const phraseDisplay = document.getElementById('phraseDisplay');
-  const llmBox = document.getElementById('llmBox');
-  const processingIndicator = document.getElementById('processingIndicator');
-  const predictButton = document.getElementById('predictButton');
-  const trainingSlider = document.getElementById('trainingSlider');
-  const trainingLabel = document.getElementById('trainingLabel');
-  const inputParticle = document.getElementById('inputParticle');
-  const outputParticle = document.getElementById('outputParticle');
+        let predictionsAtCurrentLevel = 0; // 0-3 predictions made
+        const MAX_PREDICTIONS_PER_LEVEL = 3;
 
-  function updateTrainingLabel() {
-    const percentage = 25 + (trainingLevel * 25);
-    trainingLabel.textContent = `Training: ${percentage}%`;
-  }
+        const initialWords = ["The", "cat", "is", "chasing"];
+        let currentPhraseWords = [...initialWords];
 
-  function updateDisplay() {
-    phraseDisplay.textContent = currentWords.join(' ');
-  }
+        let buttonState = "predict"; // 'predict' | 'train' | 'reset'
+        let isAnimating = false;
 
-  function reset() {
-    currentWords = [...initialWords];
-    currentIndex = initialWords.length;
-    updateDisplay();
-    predictButton.textContent = 'Predict Next Word';
-  }
+        // Predictions data - progressively better with training
+        const predictions = {
+            0: ["warble", "garble", "twas"], // 25% trained - poor
+            1: ["the", "garble", "house"], // 50% trained - better
+            2: ["the", "gray", "house"], // 75% trained - nearly correct
+            3: ["the", "gray", "mouse"], // 100% trained - perfect
+        };
 
-  async function animateInputFlow() {
-    inputParticle.textContent = currentWords.join(' ');
-    inputParticle.classList.add('animating');
+        const BOOKS_PER_TRAINING = 5;
+        const PERCENT_PER_BOOK = 5;
 
-    await new Promise(resolve => setTimeout(resolve, 600));
+        // DOM Elements
+        const phraseDisplay = document.getElementById("phraseDisplay2");
+        const actionButton = document.getElementById("actionButton2");
+        const inputParticle = document.getElementById("inputParticle2");
+        const outputParticle = document.getElementById("outputParticle2");
+        const processingIndicator = document.getElementById(
+            "processingIndicator2",
+        );
+        const meterFill = document.getElementById("meterFill2");
+        const meterLabel = document.getElementById("meterLabel2");
+        const booksContainer = document.getElementById("booksContainer2");
 
-    inputParticle.classList.remove('animating');
-  }
+        // Utility Functions
+        function delay(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
 
-  async function animateOutputFlow(word) {
-    outputParticle.textContent = word;
-    outputParticle.classList.add('animating');
+        function updateMeter(percentage) {
+            meterFill.style.width = percentage + "%";
+            meterLabel.textContent = percentage + "% trained";
+        }
 
-    await new Promise(resolve => setTimeout(resolve, 600));
+        function updateButton() {
+            if (
+                trainingLevel === 3 &&
+                predictionsAtCurrentLevel === MAX_PREDICTIONS_PER_LEVEL
+            ) {
+                // State: Reset
+                actionButton.textContent = "Start Again";
+                actionButton.className = "action-button reset-button";
+                buttonState = "reset";
+            } else if (
+                predictionsAtCurrentLevel === MAX_PREDICTIONS_PER_LEVEL
+            ) {
+                // State: Train
+                actionButton.textContent = "Train LLM";
+                actionButton.className = "action-button train-button";
+                buttonState = "train";
+            } else {
+                // State: Predict
+                actionButton.textContent = "Predict Next Word";
+                actionButton.className = "action-button predict-button";
+                buttonState = "predict";
+            }
+        }
 
-    outputParticle.classList.remove('animating');
-  }
+        // Animation Functions
+        async function animatePrediction(nextWord) {
+            // Step 1: Phrase flows into LLM (0.6s)
+            inputParticle.textContent = currentPhraseWords.join(" ");
+            inputParticle.classList.add("animating");
+            await delay(600);
+            inputParticle.classList.remove("animating");
 
-  async function predictNextWord() {
-    if (currentIndex >= phrases[trainingLevel].length) {
-      reset();
-      return;
-    }
+            // Step 2: Processing indicator (0.8s)
+            processingIndicator.classList.add("active");
+            await delay(800);
+            processingIndicator.classList.remove("active");
 
-    // Disable button
-    predictButton.disabled = true;
+            // Step 3: Word exits in arc (0.8s)
+            outputParticle.textContent = nextWord;
+            outputParticle.classList.add("animating");
+            await delay(800);
+            outputParticle.classList.remove("animating");
 
-    // Animate input flowing into LLM
-    await animateInputFlow();
+            // Step 4: Update phrase display (0.2s buffer)
+            currentPhraseWords.push(nextWord);
+            phraseDisplay.textContent = currentPhraseWords.join(" ");
+            await delay(200);
+        }
 
-    // Show processing
-    processingIndicator.classList.add('active');
-    await new Promise(resolve => setTimeout(resolve, 800));
-    processingIndicator.classList.remove('active');
+        function createBookElement() {
+            const book = document.createElement("div");
+            book.className = "book-element";
+            return book;
+        }
 
-    // Get next word
-    const nextWord = phrases[trainingLevel][currentIndex];
+        async function animateTraining() {
+            const startPercent = trainingPercentages[trainingLevel];
+            const endPercent = trainingPercentages[trainingLevel + 1];
 
-    // Animate output flowing from LLM
-    await animateOutputFlow(nextWord);
+            for (let i = 0; i < BOOKS_PER_TRAINING; i++) {
+                // Step 1: Book appears to left (0.4s)
+                const book = createBookElement();
+                booksContainer.appendChild(book);
+                book.classList.add("appearing");
+                await delay(400);
 
-    // Add next word to display
-    currentWords.push(nextWord);
-    currentIndex++;
-    updateDisplay();
+                // Step 2: Book enters LLM (0.5s)
+                book.classList.remove("appearing");
+                book.classList.add("entering");
 
-    // Re-enable button
-    predictButton.disabled = false;
+                // Step 3: Update meter during entry
+                const currentPercent =
+                    startPercent + (i + 1) * PERCENT_PER_BOOK;
+                updateMeter(currentPercent);
+                await delay(500);
 
-    // Check if phrase is complete
-    if (currentIndex >= phrases[trainingLevel].length) {
-      predictButton.textContent = 'Reset';
-    }
-  }
+                // Step 4: Remove book element
+                book.remove();
+                await delay(100);
+            }
+        }
 
-  trainingSlider.addEventListener('input', (e) => {
-    trainingLevel = parseInt(e.target.value);
-    updateTrainingLabel();
-    reset();
-  });
+        // Core Functions
+        async function executePrediction() {
+            const wordIndex = predictionsAtCurrentLevel;
+            const nextWord = predictions[trainingLevel][wordIndex];
 
-  predictButton.addEventListener('click', predictNextWord);
-})();
+            await animatePrediction(nextWord);
+
+            predictionsAtCurrentLevel++;
+            updateButton();
+        }
+
+        async function executeTraining() {
+            await animateTraining();
+
+            trainingLevel++;
+            predictionsAtCurrentLevel = 0;
+
+            // Reset phrase to initial words after training
+            currentPhraseWords = [...initialWords];
+            phraseDisplay.textContent = currentPhraseWords.join(" ");
+
+            updateButton();
+        }
+
+        function executeReset() {
+            // Reset state
+            trainingLevel = 0;
+            predictionsAtCurrentLevel = 0;
+            currentPhraseWords = [...initialWords];
+            buttonState = "predict";
+
+            // Reset UI
+            phraseDisplay.textContent = currentPhraseWords.join(" ");
+            updateMeter(25);
+            updateButton();
+        }
+
+        // Button Click Handler
+        async function handleButtonClick() {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            actionButton.disabled = true;
+
+            try {
+                switch (buttonState) {
+                    case "predict":
+                        await executePrediction();
+                        break;
+                    case "train":
+                        await executeTraining();
+                        break;
+                    case "reset":
+                        executeReset();
+                        break;
+                }
+            } finally {
+                isAnimating = false;
+                actionButton.disabled = false;
+            }
+        }
+
+        // Initialize
+        actionButton.addEventListener("click", handleButtonClick);
+        updateMeter(25);
+        updateButton();
+    })();
 </script>

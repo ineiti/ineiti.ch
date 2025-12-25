@@ -1,1070 +1,883 @@
-<div class="rlhf-trainer">
-    <!-- Pie Chart and Control -->
-    <div class="cycle-control">
-        <svg class="pie-chart" viewBox="0 0 200 200" id="pieChart">
-            <!-- Create Prompts segment (0-120 degrees) -->
-            <path
-                class="segment segment-prompts"
-                d="M 100,100 L 100,0 A 100,100 0 0,1 186.6,150 Z"
-            />
-            <!-- Human Feedback segment (120-240 degrees) -->
-            <path
-                class="segment segment-feedback"
-                d="M 100,100 L 186.6,150 A 100,100 0 0,1 13.4,150 Z"
-            />
-            <!-- Learn segment (240-360 degrees) -->
-            <path
-                class="segment segment-learn"
-                d="M 100,100 L 13.4,150 A 100,100 0 0,1 100,0 Z"
-            />
-
-            <!-- Labels -->
-            <text class="segment-label" x="152" y="63" text-anchor="middle">
-                Create
-            </text>
-            <text class="segment-label" x="152" y="78" text-anchor="middle">
-                Prompts
-            </text>
-
-            <text class="segment-label" x="100" y="153" text-anchor="middle">
-                Human
-            </text>
-            <text class="segment-label" x="100" y="168" text-anchor="middle">
-                Feedback
-            </text>
-
-            <text class="segment-label" x="48" y="63" text-anchor="middle">
-                Learn
-            </text>
-
-            <!-- Clock hand (starts pointing up) -->
-            <g id="clockHand" transform="rotate(0 100 100)">
-                <line
-                    x1="100"
-                    y1="100"
-                    x2="100"
-                    y2="30"
-                    stroke="#333"
-                    stroke-width="3"
-                    stroke-linecap="round"
-                />
-                <polygon points="100,25 95,35 105,35" fill="#333" />
-                <circle cx="100" cy="100" r="6" fill="#333" />
-            </g>
-        </svg>
-
-        <div class="control-panel">
-            <button id="advanceBtn" class="control-button advance-button">
-                Advance
-            </button>
-            <div class="training-status" id="trainingStatus">Training: 0%</div>
-        </div>
-    </div>
-
-    <!-- Prompt Section -->
-    <div class="content-section" id="promptSection" style="display: none">
-        <div class="section-label">Prompt</div>
-        <div class="prompt-text">"Explain quantum computing"</div>
-    </div>
-
-    <!-- Answer Section -->
-    <div class="content-section" id="answerSection" style="display: none">
-        <div class="section-label">Model Response</div>
-        <div class="answer-text" id="answerText"></div>
-    </div>
-</div>
-
 <style>
-    .rlhf-trainer {
+    /* rlhf-cycle Styles */
+    .rlhf-cycle {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        padding: 2rem;
         margin: 2rem 0;
-        padding: 1.5rem;
-        background: var(--background, #f9f9f9);
+        border: 1px solid #e0e0e0;
+        position: relative;
+        min-height: 600px;
+        overflow: visible;
+    }
+
+    /* Prompt Display */
+    .rlhf-cycle .prompt-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .rlhf-cycle .prompt-display {
+        background: white;
+        padding: 1.5rem 2rem;
         border-radius: 8px;
-        border: 2px solid var(--border-color, #ddd);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .rlhf-trainer {
-            background: #2a2a2a;
-            border-color: #444;
-        }
-    }
-
-    /* Cycle Control Layout */
-    .cycle-control {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        min-height: 60px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 2rem;
-        margin-bottom: 1.5rem;
-        padding: 1.5rem 0;
-    }
-
-    /* Pie Chart */
-    .pie-chart {
-        width: 200px;
-        height: 200px;
-        flex-shrink: 0;
-    }
-
-    .segment {
-        stroke: var(--background, #f9f9f9);
-        stroke-width: 2;
-        opacity: 0.3;
-        transition: opacity 0.3s ease;
-    }
-
-    .segment.active {
-        opacity: 1;
-    }
-
-    .segment-prompts {
-        fill: #667eea;
-    }
-
-    .segment-feedback {
-        fill: #f093fb;
-    }
-
-    .segment-learn {
-        fill: #4facfe;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .segment {
-            stroke: #2a2a2a;
-        }
-
-        .segment-prompts {
-            fill: #8b9ff5;
-        }
-
-        .segment-feedback {
-            fill: #f5a3ff;
-        }
-
-        .segment-learn {
-            fill: #6fbfff;
-        }
-    }
-
-    .segment-label {
-        font-size: 12px;
-        font-weight: 600;
-        fill: #fff;
-        pointer-events: none;
-    }
-
-    /* Clock Hand */
-    #clockHand {
-        transition: transform 1s ease-in-out;
-    }
-
-    #clockHand line {
-        stroke: #333;
-    }
-
-    #clockHand polygon,
-    #clockHand circle {
-        fill: #333;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        #clockHand line {
-            stroke: #e0e0e0;
-        }
-
-        #clockHand polygon,
-        #clockHand circle {
-            fill: #e0e0e0;
-        }
-    }
-
-    /* Control Panel */
-    .control-panel {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .control-button {
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 120px;
-    }
-
-    .advance-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-    }
-
-    .advance-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
-    }
-
-    .advance-button:active {
-        transform: translateY(0);
-    }
-
-    .advance-button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none !important;
-    }
-
-    .reset-button {
-        background: #e0e0e0;
-        color: #333;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .reset-button:hover {
-        background: #d0d0d0;
-        transform: translateY(-1px);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .reset-button {
-            background: #444;
-            color: #e0e0e0;
-        }
-
-        .reset-button:hover {
-            background: #555;
-        }
-    }
-
-    .training-status {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #666;
         text-align: center;
+        min-width: 300px;
     }
 
-    @media (prefers-color-scheme: dark) {
-        .training-status {
-            color: #aaa;
-        }
-    }
-
-    /* Content Sections */
-    .content-section {
-        margin-bottom: 1.5rem;
-    }
-
-    .content-section:last-child {
-        margin-bottom: 0;
-    }
-
-    .section-label {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #333;
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .section-label {
-            color: #e0e0e0;
-        }
-    }
-
-    .prompt-text {
-        padding: 1rem;
-        background: #fff;
-        border-left: 4px solid #667eea;
-        border-radius: 4px;
-        color: #1a1a1a;
-        font-size: 1.1rem;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .prompt-text {
-            background: #1a1a1a;
-            color: #e0e0e0;
-        }
-    }
-
-    .answer-text {
-        padding: 1.5rem;
-        background: #fff;
-        border-radius: 6px;
-        min-height: 120px;
-        color: #1a1a1a;
-        line-height: 1.8;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .answer-text {
-            background: #1a1a1a;
-            color: #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-    }
-
-    .answer-text em {
-        color: #666;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .answer-text em {
-            color: #aaa;
-        }
-    }
-
-    /* Response Options */
-    .response-option {
-        padding: 0.75rem;
-        margin: 0.75rem 0;
-        background: #f5f5f5;
-        border-radius: 4px;
-        border-left: 3px solid transparent;
-        font-size: 0.95rem;
-        opacity: 0;
-        animation: fadeIn 0.3s ease-in forwards;
-        transition:
-            transform 0.6s ease-in-out,
-            border-left-color 0.3s ease;
+    /* Content Container - mirrored layout */
+    .rlhf-cycle .content-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 3rem;
+        margin: 3rem 0;
+        min-height: 280px;
         position: relative;
     }
 
-    .response-option.reordering {
-        z-index: 10;
+    /* Answers Container (LEFT side) */
+    .rlhf-cycle .answers-container {
+        flex: 1;
+        max-width: 450px;
+        min-height: 280px;
+        position: relative;
     }
 
-    .response-option.merging {
-        transition: all 0.6s ease-in-out;
+    /* LLM and Controls Container (RIGHT side) */
+    .rlhf-cycle .llm-controls-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
     }
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Answer Block */
+    .rlhf-cycle .answer-block {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        position: relative;
+        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
     }
 
-    @keyframes mergeToCenter {
-        0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-        100% {
-            opacity: 0;
-            transform: scale(0.3) translateY(0);
-        }
+    .rlhf-cycle .answer-block.hidden {
+        opacity: 0;
     }
 
-    @keyframes fadeInLearning {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
-
-    .learning-content {
-        animation: fadeInLearning 0.5s ease-in forwards;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .response-option {
-            background: #2a2a2a;
-        }
-    }
-
-    .response-option strong {
+    .rlhf-cycle .answer-header {
+        font-weight: 700;
         color: #667eea;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
     }
 
-    .response-option .feedback-label {
-        display: block;
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-        border-top: 1px solid #ddd;
+    .rlhf-cycle .answer-content {
+        color: #333;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .rlhf-cycle .ranking-badge {
+        margin-top: 0.75rem;
+        padding: 0.5rem;
+        background: rgba(76, 175, 80, 0.1);
+        border-radius: 4px;
         font-size: 0.85rem;
         color: #4caf50;
         font-weight: 600;
-        opacity: 0;
-        animation: fadeIn 0.4s ease-in forwards;
+        display: none;
     }
 
-    @media (prefers-color-scheme: dark) {
-        .response-option .feedback-label {
-            border-top-color: #444;
-            color: #66bb6a;
-        }
+    .rlhf-cycle .ranking-badge.visible {
+        display: block;
     }
 
-    .feedback-item {
-        padding: 0.5rem 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    /* Ranking color indicators */
+    .rlhf-cycle .answer-block.rank-1 {
+        border-left-color: #4caf50;
+    }
+    .rlhf-cycle .answer-block.rank-2 {
+        border-left-color: #ff9800;
+    }
+    .rlhf-cycle .answer-block.rank-3 {
+        border-left-color: #f44336;
     }
 
-    .feedback-item::before {
-        content: "✓";
-        color: #4caf50;
-        font-weight: bold;
-    }
-
-    .learning-indicator {
-        text-align: center;
+    /* LLM Box (RIGHT side) */
+    .rlhf-cycle .llm-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
         padding: 1.5rem;
+        width: 220px;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        color: white;
+        flex-shrink: 0;
     }
 
-    .learning-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid #e0e0e0;
-        border-top-color: #667eea;
+    .rlhf-cycle .llm-label {
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-align: center;
+    }
+
+    /* Training Meter */
+    .rlhf-cycle .training-meter {
+        width: 180px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .rlhf-cycle .meter-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+        border-radius: 15px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .rlhf-cycle .meter-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    /* Processing Indicator */
+    .rlhf-cycle .processing-indicator {
+        width: 35px;
+        height: 35px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
         border-radius: 50%;
-        margin: 0 auto 1rem;
-        animation: spin 1s linear infinite;
+        opacity: 0;
+        transition: opacity 0.3s;
     }
 
-    @keyframes spin {
+    .rlhf-cycle .processing-indicator.active {
+        opacity: 1;
+        animation: spin-rlhf 1s linear infinite;
+    }
+
+    @keyframes spin-rlhf {
         to {
             transform: rotate(360deg);
         }
     }
 
-    @media (prefers-color-scheme: dark) {
-        .learning-spinner {
-            border-color: #444;
-            border-top-color: #8b9ff5;
+    /* Controls */
+    .rlhf-cycle .controls {
+        display: flex;
+        justify-content: center;
+    }
+
+    .rlhf-cycle .action-button {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .rlhf-cycle .action-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .rlhf-cycle .action-button:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .rlhf-cycle .action-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .rlhf-cycle .create-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .rlhf-cycle .feedback-button {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .rlhf-cycle .training-button {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .rlhf-cycle .final-button {
+        background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+        color: white;
+    }
+
+    .rlhf-cycle .reset-button {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    /* Animation Particles */
+    .rlhf-cycle .animation-particle {
+        position: absolute;
+        background: white;
+        padding: 0.8rem 1.2rem;
+        border-radius: 6px;
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 100;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Prompt flowing into LLM (right side) */
+    .rlhf-cycle .prompt-particle.animating {
+        animation: promptFlowInRLHF 0.3s ease-in forwards;
+    }
+
+    @keyframes promptFlowInRLHF {
+        0% {
+            top: 120px;
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+        100% {
+            top: 280px;
+            left: calc(100% - 110px);
+            opacity: 0;
+            transform: translateX(-50%) scale(0.7);
         }
     }
 
-    /* Mobile Responsiveness */
-    @media (max-width: 600px) {
-        .rlhf-trainer {
-            padding: 1rem;
+    /* Answer exiting LLM in arc to left */
+    .rlhf-cycle .answer-particle.animating-exit {
+        animation: answerExitArc 0.3s ease-out forwards;
+    }
+
+    @keyframes answerExitArc {
+        0% {
+            top: 280px;
+            left: calc(100% - 110px);
+            opacity: 1;
+            transform: translateX(-50%) scale(0.8);
+        }
+        40% {
+            top: 200px;
+            left: calc(100% - 300px);
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+        100% {
+            top: 280px;
+            left: calc(100% - 450px);
+            opacity: 0;
+            transform: translateX(-50%) scale(0.9);
+        }
+    }
+
+    /* Answer block appearing on left */
+    .rlhf-cycle .answer-block.appearing {
+        animation: answerAppearLeft 0.3s ease-out forwards;
+    }
+
+    @keyframes answerAppearLeft {
+        0% {
+            opacity: 0;
+            transform: translateX(50px) scale(0.9);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
+    /* Answer reordering */
+    .rlhf-cycle .answer-block.reordering {
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10;
+    }
+
+    /* Answer sliding into LLM */
+    .rlhf-cycle .answer-block.training {
+        animation: answerSlideIntoLLM 0.4s ease-in forwards;
+    }
+
+    @keyframes answerSlideIntoLLM {
+        0% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateX(400px) scale(0.3);
+        }
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        .rlhf-cycle {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-color: #333;
         }
 
-        .cycle-control {
-            flex-direction: column;
+        .rlhf-cycle .prompt-display,
+        .rlhf-cycle .answer-block {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+
+        .rlhf-cycle .answer-header {
+            color: #8b9bea;
+        }
+
+        .rlhf-cycle .answer-content {
+            color: #e0e0e0;
+        }
+
+        .rlhf-cycle .meter-label {
+            color: white;
+        }
+
+        .rlhf-cycle .reset-button {
+            background: #444;
+            color: #e0e0e0;
+        }
+
+        .rlhf-cycle .animation-particle {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 800px) {
+        .rlhf-cycle {
+            padding: 1rem;
+            min-height: 550px;
+        }
+
+        .rlhf-cycle .content-container {
+            flex-direction: column-reverse;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .rlhf-cycle .answers-container {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .rlhf-cycle .llm-controls-container {
             gap: 1rem;
         }
 
-        .pie-chart {
-            width: 180px;
-            height: 180px;
+        .rlhf-cycle .prompt-display {
+            font-size: 1.2rem;
+            padding: 1rem 1.5rem;
+            min-width: 250px;
         }
 
-        .control-button {
-            padding: 0.6rem 1.5rem;
+        .rlhf-cycle .llm-box {
+            width: 180px;
+            height: 180px;
+            padding: 1rem;
+        }
+
+        .rlhf-cycle .llm-label {
+            font-size: 1.5rem;
+        }
+
+        .rlhf-cycle .training-meter {
+            width: 150px;
+            height: 25px;
+        }
+
+        .rlhf-cycle .meter-label {
+            font-size: 0.8rem;
+        }
+
+        .rlhf-cycle .action-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .rlhf-cycle .animation-particle {
+            font-size: 1.1rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .rlhf-cycle .answer-content {
             font-size: 0.9rem;
         }
     }
 </style>
 
+<div class="rlhf-cycle">
+    <!-- Prompt Display -->
+    <div class="prompt-container">
+        <div class="prompt-display" id="promptDisplayRLHF">
+            Explain quantum computing
+        </div>
+    </div>
+
+    <!-- Content Container -->
+    <div class="content-container">
+        <!-- Answers Container (LEFT) -->
+        <div class="answers-container" id="answersContainerRLHF"></div>
+
+        <!-- LLM Box and Controls (RIGHT) -->
+        <div class="llm-controls-container">
+            <div class="llm-box" id="llmBoxRLHF">
+                <div class="llm-label" id="llmLabelRLHF">LLM</div>
+                <div class="training-meter">
+                    <div class="meter-fill" id="meterFillRLHF"></div>
+                    <div class="meter-label" id="meterLabelRLHF">
+                        0% trained
+                    </div>
+                </div>
+                <div
+                    class="processing-indicator"
+                    id="processingIndicatorRLHF"
+                ></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button
+                    id="actionButtonRLHF"
+                    class="action-button create-button"
+                >
+                    Create Answers
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation Particles -->
+    <div
+        class="animation-particle prompt-particle"
+        id="promptParticleRLHF"
+    ></div>
+    <div
+        class="animation-particle answer-particle"
+        id="answerParticleRLHF"
+    ></div>
+</div>
+
 <script>
     (function () {
-        // Training progression
-        const trainingLevels = [0, 33, 66, 100];
+        "use strict";
 
-        // Step names
-        const steps = ["Create Prompts", "Human Feedback", "Learn"];
+        // State Management
+        let trainingLevel = 0; // Index into [0, 1, 2, 3] = [0%, 33%, 66%, 100%]
+        const TRAINING_LEVELS = [0, 33, 66, 100];
+        const PERCENT_PER_ANSWER = 11; // 3 answers × 11% = 33%
 
-        // State
-        let trainingLevelIndex = 0; // Index into trainingLevels (0, 1, 2, 3)
-        let currentStepIndex = 0; // Index into steps (0, 1, 2)
-        let handRotation = 0; // Current rotation in degrees
-        let isAnimating = false; // Prevent clicks during animation
+        let currentPhase = "create"; // 'create' | 'feedback' | 'training' | 'final' | 'complete'
+        let answersCreatedInPhase = 0; // 0-3
+        const MAX_ANSWERS = 3;
 
-        // DOM elements
-        const answerTextEl = document.getElementById("answerText");
-        const advanceBtn = document.getElementById("advanceBtn");
-        const trainingStatusEl = document.getElementById("trainingStatus");
-        const clockHand = document.getElementById("clockHand");
-        const promptSection = document.getElementById("promptSection");
-        const answerSection = document.getElementById("answerSection");
-        const segments = {
-            "Create Prompts": document.querySelector(".segment-prompts"),
-            "Human Feedback": document.querySelector(".segment-feedback"),
-            Learn: document.querySelector(".segment-learn"),
-        };
+        let currentAnswers = []; // Array of {letter, text, element, ranking}
+        let buttonState = "create";
+        let isAnimating = false;
 
-        // Content for each step
+        // Content data structure
         const content = {
             0: {
-                // 0% training
-                "Create Prompts": `<strong>Generating multiple responses...</strong>
-
-<div class="response-option">
-<strong>Response A:</strong> Quantum computing quantum mechanics quantum bits qubit superposition entanglement algorithm...
-</div>
-
-<div class="response-option">
-<strong>Response B:</strong> Computing with quantum particles using physics principles for calculations.
-</div>
-
-<div class="response-option">
-<strong>Response C:</strong> Quantum computing is a type of computation that harnesses quantum mechanical phenomena.
-</div>`,
-
-                "Human Feedback": `<strong>Human evaluators provide rankings:</strong>
-
-<div class="feedback-item">Response C ranked highest - Clear and accurate</div>
-<div class="feedback-item">Response B ranked second - Too brief</div>
-<div class="feedback-item">Response A ranked lowest - Word salad</div>
-
-<em>The model will learn from these preferences...</em>`,
-
-                Learn: `<div class="learning-indicator">
-<strong>Improved:</strong>
-<p style="margin-top: 1rem;">• Clear, structured explanations<br>
-• Accurate technical content<br>
-• Appropriate level of detail</p>
-</div>`,
+                responses: {
+                    A: "Quantum computing quantum mechanics quantum bits qubit superposition entanglement algorithm...",
+                    B: "Computing with quantum particles using physics principles for calculations.",
+                    C: "Quantum computing is a type of computation that harnesses quantum mechanical phenomena.",
+                },
+                feedback: {
+                    rankings: ["C", "B", "A"],
+                    reasons: {
+                        C: "Clear and accurate",
+                        B: "Too brief",
+                        A: "Word salad",
+                    },
+                },
             },
-
             33: {
-                // 33% training
-                "Create Prompts": `<strong>Generating improved responses...</strong>
-
-<div class="response-option">
-<strong>Response A:</strong> Quantum computing uses qubits instead of regular bits. Qubits can be 0 and 1 at same time. This makes quantum computers fast.
-</div>
-
-<div class="response-option">
-<strong>Response B:</strong> Quantum computing leverages quantum mechanics to process information differently than classical computers, using quantum bits that can exist in superposition states.
-</div>
-
-<div class="response-option">
-<strong>Response C:</strong> Unlike classical computers that use bits (0 or 1), quantum computers use qubits which can be in multiple states simultaneously through superposition.
-</div>`,
-
-                "Human Feedback": `<strong>Human evaluators provide feedback:</strong>
-
-<div class="feedback-item">Response C ranked highest - Best explanation for general audience</div>
-<div class="feedback-item">Response B ranked second - Good but slightly technical</div>
-<div class="feedback-item">Response A ranked third - Too simplified</div>
-
-<em>Continuing to refine response quality...</em>`,
-
-                Learn: `<div class="learning-indicator">
-<strong>Improved:</strong>
-<p style="margin-top: 1rem;">• Balance between simplicity and accuracy<br>
-• Use of analogies and comparisons<br>
-• Structured, reader-friendly format</p>
-</div>`,
+                responses: {
+                    A: "Quantum computing uses qubits instead of regular bits. Qubits can be 0 and 1 at same time. This makes quantum computers fast.",
+                    B: "Quantum computing leverages quantum mechanics to process information differently than classical computers, using quantum bits that can exist in superposition states.",
+                    C: "Unlike classical computers that use bits (0 or 1), quantum computers use qubits which can be in multiple states simultaneously through superposition.",
+                },
+                feedback: {
+                    rankings: ["C", "B", "A"],
+                    reasons: {
+                        C: "Best explanation for general audience",
+                        B: "Good but slightly technical",
+                        A: "Too simplified",
+                    },
+                },
             },
-
             66: {
-                // 66% training
-                "Create Prompts": `<strong>Generating well-trained responses...</strong>
-
-<div class="response-option">
-<strong>Response A:</strong> Quantum computing is an advanced computing paradigm that leverages quantum mechanical phenomena like superposition and entanglement. Unlike classical computers that process bits as either 0 or 1, quantum computers use qubits that can exist in multiple states simultaneously, enabling parallel computation at unprecedented scales.
-</div>
-
-<div class="response-option">
-<strong>Response B:</strong> Quantum computing represents a fundamentally different approach to computation. Classical computers use bits (0 or 1), while quantum computers use qubits that can be 0, 1, or both simultaneously through superposition. This allows quantum computers to solve certain complex problems exponentially faster than classical computers.
-</div>`,
-
-                "Human Feedback": `<strong>Human evaluators provide feedback:</strong>
-
-<div class="feedback-item">Response B ranked highest - Excellent balance and clarity</div>
-<div class="feedback-item">Response A ranked second - Very good but slightly dense</div>
-
-<em>Model has learned to consistently produce high-quality responses!</em>`,
-
-                Learn: `<div class="learning-indicator">
-<strong>Improved:</strong>
-<p style="margin-top: 1rem;">• Natural conversational tone<br>
-• Optimal information density<br>
-• Helpful, accurate, and engaging responses</p>
-<p style="margin-top: 1.5rem; font-weight: 600; color: #4caf50;">Model is ready for use</p>
-</div>`,
+                responses: {
+                    A: "Quantum computing is an advanced computing paradigm that leverages quantum mechanical phenomena like superposition and entanglement. Unlike classical computers that process bits as either 0 or 1, quantum computers use qubits that can exist in multiple states simultaneously, enabling parallel computation at unprecedented scales.",
+                    B: "Quantum computing represents a fundamentally different approach to computation. Classical computers use bits (0 or 1), while quantum computers use qubits that can be 0, 1, or both simultaneously through superposition. This allows quantum computers to solve certain complex problems exponentially faster than classical computers.",
+                    C: "Quantum computers work differently from regular computers by using quantum bits. These qubits can represent multiple values at once, making quantum computers very powerful for specific types of calculations.",
+                },
+                feedback: {
+                    rankings: ["B", "A", "C"],
+                    reasons: {
+                        B: "Excellent balance and clarity",
+                        A: "Very good but slightly dense",
+                        C: "Good attempt but oversimplified for this level",
+                    },
+                },
+            },
+            100: {
+                final: "Quantum computing is a revolutionary computing paradigm that harnesses quantum mechanical phenomena—particularly superposition and entanglement—to process information in fundamentally different ways than classical computers. While classical computers use bits that exist in definite states of 0 or 1, quantum computers use qubits that can exist in superposition, representing multiple states simultaneously. This enables quantum computers to explore vast solution spaces in parallel, making them exponentially faster for specific problem classes such as cryptography, molecular simulation, and optimization. Though still in early stages of development, quantum computing promises to transform fields from drug discovery to artificial intelligence.",
             },
         };
 
-        function deactivateAllSegments() {
-            Object.values(segments).forEach((segment) => {
-                segment.classList.remove("active");
-            });
+        // DOM Elements
+        const promptDisplay = document.getElementById("promptDisplayRLHF");
+        const actionButton = document.getElementById("actionButtonRLHF");
+        const promptParticle = document.getElementById("promptParticleRLHF");
+        const answerParticle = document.getElementById("answerParticleRLHF");
+        const processingIndicator = document.getElementById(
+            "processingIndicatorRLHF",
+        );
+        const meterFill = document.getElementById("meterFillRLHF");
+        const meterLabel = document.getElementById("meterLabelRLHF");
+        const llmLabel = document.getElementById("llmLabelRLHF");
+        const answersContainer = document.getElementById(
+            "answersContainerRLHF",
+        );
+
+        // Utility Functions
+        function delay(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
         }
 
-        function updateTrainingStatus() {
-            trainingStatusEl.textContent = `Training: ${trainingLevels[trainingLevelIndex]}%`;
+        function updateMeter(percentage) {
+            meterFill.style.width = percentage + "%";
+            meterLabel.textContent = percentage + "% trained";
+        }
+
+        function updateLLMLabel(text) {
+            llmLabel.textContent = text;
         }
 
         function updateButton() {
-            if (trainingLevels[trainingLevelIndex] === 100) {
-                advanceBtn.textContent = "Reset";
-                advanceBtn.classList.remove("advance-button");
-                advanceBtn.classList.add("reset-button");
-            } else {
-                advanceBtn.textContent = "Advance";
-                advanceBtn.classList.remove("reset-button");
-                advanceBtn.classList.add("advance-button");
+            const level = TRAINING_LEVELS[trainingLevel];
+
+            if (level === 100 && currentPhase === "final") {
+                actionButton.textContent = "Final Answer";
+                actionButton.className = "action-button final-button";
+                buttonState = "final";
+            } else if (level === 100 && currentPhase === "complete") {
+                actionButton.textContent = "Start Over";
+                actionButton.className = "action-button reset-button";
+                buttonState = "reset";
+            } else if (
+                currentPhase === "create" &&
+                answersCreatedInPhase < MAX_ANSWERS
+            ) {
+                actionButton.textContent = "Create Answers";
+                actionButton.className = "action-button create-button";
+                buttonState = "create";
+            } else if (currentPhase === "feedback") {
+                actionButton.textContent = "Human Feedback";
+                actionButton.className = "action-button feedback-button";
+                buttonState = "feedback";
+            } else if (currentPhase === "training") {
+                actionButton.textContent = "Training";
+                actionButton.className = "action-button training-button";
+                buttonState = "training";
             }
         }
 
-        function advance() {
-            // Prevent multiple clicks during animation
-            if (isAnimating) return;
+        function createAnswerBlock(letter, text) {
+            const block = document.createElement("div");
+            block.className = "answer-block hidden";
+            block.dataset.answer = letter;
 
-            // Check if we should reset
-            if (
-                trainingLevels[trainingLevelIndex] === 100 &&
-                currentStepIndex === 0
-            ) {
-                reset();
-                return;
+            const header = document.createElement("div");
+            header.className = "answer-header";
+            header.textContent = "Response " + letter;
+
+            const content = document.createElement("div");
+            content.className = "answer-content";
+            content.textContent = text;
+
+            const badge = document.createElement("div");
+            badge.className = "ranking-badge";
+
+            block.appendChild(header);
+            block.appendChild(content);
+            block.appendChild(badge);
+
+            return block;
+        }
+
+        // CREATE ANSWERS Phase
+        async function createAnswer(letter) {
+            const level = TRAINING_LEVELS[trainingLevel];
+            const responseText = content[level].responses[letter];
+
+            // Step 1: Prompt flows into LLM (0.3s)
+            promptParticle.textContent = "Explain quantum computing";
+            promptParticle.classList.add("animating");
+            await delay(300);
+            promptParticle.classList.remove("animating");
+
+            // Step 2: Processing indicator (0.3s)
+            processingIndicator.classList.add("active");
+            await delay(300);
+            processingIndicator.classList.remove("active");
+
+            // Step 3: Answer exits LLM in arc to left (0.3s)
+            answerParticle.textContent = "Response " + letter;
+            answerParticle.classList.add("animating-exit");
+            await delay(300);
+            answerParticle.classList.remove("animating-exit");
+
+            // Step 4: Answer block appears in answers container (0.3s)
+            const answerBlock = createAnswerBlock(letter, responseText);
+            answersContainer.appendChild(answerBlock);
+            answerBlock.classList.add("appearing");
+            await delay(300);
+            answerBlock.classList.remove("appearing", "hidden");
+
+            // Store for later phases
+            currentAnswers.push({
+                letter,
+                text: responseText,
+                element: answerBlock,
+            });
+
+            answersCreatedInPhase++;
+
+            // Check if all answers created
+            if (answersCreatedInPhase >= MAX_ANSWERS) {
+                currentPhase = "feedback";
             }
+        }
 
-            isAnimating = true;
-            advanceBtn.disabled = true;
-
-            const stepName = steps[currentStepIndex];
-            const currentTrainingLevel = trainingLevels[trainingLevelIndex];
-            const levelContent = content[currentTrainingLevel];
-
-            // On first advance, scroll the trainer into view
-            if (handRotation === 0) {
-                document
-                    .querySelector(".rlhf-trainer")
-                    .scrollIntoView({ behavior: "smooth", block: "start" });
+        // CREATE ALL ANSWERS Phase (creates all 3 answers sequentially)
+        async function createAllAnswers() {
+            const letters = ["A", "B", "C"];
+            for (let i = 0; i < MAX_ANSWERS; i++) {
+                await createAnswer(letters[i]);
             }
+        }
 
-            // Activate current segment
-            segments[stepName].classList.add("active");
+        // HUMAN FEEDBACK Phase
+        async function applyFeedback() {
+            const level = TRAINING_LEVELS[trainingLevel];
+            const rankings = content[level].feedback.rankings;
+            const reasons = content[level].feedback.reasons;
 
-            // Rotate hand by 120 degrees over 1 second
-            handRotation += 120;
-            clockHand.setAttribute(
-                "transform",
-                `rotate(${handRotation} 100 100)`,
+            // Step 1: Calculate current positions
+            const answerPositions = currentAnswers.map((answer, index) => ({
+                answer,
+                currentIndex: index,
+                rect: answer.element.getBoundingClientRect(),
+            }));
+
+            // Step 2: Determine target order based on rankings
+            const targetOrder = rankings.map((letter) =>
+                currentAnswers.find((a) => a.letter === letter),
             );
 
-            // Show sections (but Learn phase will hide them)
-            promptSection.style.display = "block";
-            promptSection.style.opacity = "1";
-            answerSection.style.display = "block";
-            const sectionLabelEl =
-                answerSection.querySelector(".section-label");
-            if (sectionLabelEl) {
-                sectionLabelEl.style.display = "block";
-                sectionLabelEl.style.opacity = "1";
-            }
+            // Step 3: Calculate moves and apply transforms
+            targetOrder.forEach((answer, targetIndex) => {
+                const currentIndex = currentAnswers.indexOf(answer);
+                const rankClass =
+                    targetIndex === 0
+                        ? "rank-1"
+                        : targetIndex === 1
+                          ? "rank-2"
+                          : "rank-3";
 
-            // Display content for current step
-            if (stepName === "Create Prompts") {
-                // For Create Prompts, show responses one by one
-                const contentHTML = levelContent[stepName];
+                answer.element.classList.add(rankClass, "reordering");
 
-                // Extract the header and response divs
-                const tempDiv = document.createElement("div");
-                tempDiv.innerHTML = contentHTML;
+                // Calculate vertical offset (approximate height + margin)
+                const avgHeight = 100;
+                const moveDistance = (targetIndex - currentIndex) * avgHeight;
+                answer.element.style.transform = `translateY(${moveDistance}px)`;
+            });
 
-                const header = tempDiv.querySelector("strong");
-                const responses = tempDiv.querySelectorAll(".response-option");
+            await delay(800);
 
-                // Clear and add header immediately
-                answerTextEl.innerHTML = "";
-                if (header) {
-                    answerTextEl.appendChild(header.cloneNode(true));
-                }
+            // Step 4: Reorder in DOM and add ranking badges
+            answersContainer.innerHTML = "";
+            targetOrder.forEach((answer, index) => {
+                answer.element.style.transform = "";
+                answer.element.classList.remove("reordering");
+                answersContainer.appendChild(answer.element);
 
-                // Add each response with delays
-                responses.forEach((response, index) => {
-                    setTimeout(
-                        () => {
-                            const responseClone = response.cloneNode(true);
-                            // Reset animation by removing and re-adding the class
-                            responseClone.style.animation = "none";
-                            answerTextEl.appendChild(responseClone);
-                            // Trigger reflow to restart animation
-                            void responseClone.offsetWidth;
-                            responseClone.style.animation = "";
-                        },
-                        250 * (index + 1),
-                    );
-                });
-            } else if (stepName === "Human Feedback") {
-                // For Human Feedback, reorder existing responses and add feedback labels
-                const contentHTML = levelContent[stepName];
+                // Add ranking badge
+                const badge = answer.element.querySelector(".ranking-badge");
+                badge.textContent = reasons[answer.letter];
+                badge.classList.add("visible");
+            });
 
-                // Parse feedback to extract rankings
-                const tempDiv = document.createElement("div");
-                tempDiv.innerHTML = contentHTML;
-                const feedbackItems =
-                    tempDiv.querySelectorAll(".feedback-item");
+            // Update current order
+            currentAnswers = targetOrder;
 
-                // Extract ranking information (e.g., "Response C ranked highest")
-                const rankings = [];
-                feedbackItems.forEach((item) => {
-                    const text = item.textContent;
-                    const match = text.match(
-                        /Response ([ABC]) ranked (highest|second|third|lowest)/,
-                    );
-                    if (match) {
-                        const letter = match[1];
-                        const rank = match[2];
-                        const description = text.split(" - ")[1] || "";
-                        rankings.push({
-                            letter,
-                            rank,
-                            description,
-                            fullText: text,
-                        });
-                    }
-                });
-
-                // Get current response elements
-                const currentResponses = Array.from(
-                    answerTextEl.querySelectorAll(".response-option"),
-                );
-
-                if (currentResponses.length > 0) {
-                    // Update header
-                    const header = tempDiv.querySelector("strong");
-                    const firstChild = answerTextEl.firstChild;
-                    if (
-                        header &&
-                        firstChild &&
-                        firstChild.tagName === "STRONG"
-                    ) {
-                        firstChild.textContent = header.textContent;
-                    }
-
-                    // Create a map of response letter to element and store current positions
-                    const responseData = [];
-                    currentResponses.forEach((el, index) => {
-                        const strongText =
-                            el.querySelector("strong")?.textContent || "";
-                        const match = strongText.match(/Response ([ABC]):/);
-                        if (match) {
-                            const rect = el.getBoundingClientRect();
-                            responseData.push({
-                                letter: match[1],
-                                element: el,
-                                currentIndex: index,
-                                currentTop: rect.top,
-                            });
-                        }
-                    });
-
-                    // Determine target order based on rankings
-                    const orderedRankings = rankings.sort((a, b) => {
-                        const order = {
-                            highest: 0,
-                            second: 1,
-                            third: 2,
-                            lowest: 2,
-                        };
-                        return order[a.rank] - order[b.rank];
-                    });
-
-                    // Create target position mapping
-                    const targetPositions = {};
-                    orderedRankings.forEach((ranking, targetIndex) => {
-                        targetPositions[ranking.letter] = targetIndex;
-                    });
-
-                    // Calculate and store the offset for each element
-                    const animations = [];
-                    responseData.forEach((data) => {
-                        const targetIndex = targetPositions[data.letter];
-                        if (targetIndex !== undefined) {
-                            // Calculate the offset in position changes (not pixels yet)
-                            const positionOffset =
-                                targetIndex - data.currentIndex;
-
-                            // Store animation data
-                            animations.push({
-                                element: data.element,
-                                letter: data.letter,
-                                currentIndex: data.currentIndex,
-                                targetIndex: targetIndex,
-                                positionOffset: positionOffset,
-                                ranking: orderedRankings[targetIndex],
-                            });
-                        }
-                    });
-
-                    // Calculate average element height for movement
-                    const avgHeight =
-                        currentResponses.reduce(
-                            (sum, el) => sum + el.offsetHeight,
-                            0,
-                        ) / currentResponses.length;
-                    const margin = 12; // 0.75rem margin between elements
-
-                    // Step 1: Prepare elements - clear animations and set up for transition
-                    animations.forEach((anim) => {
-                        // CRITICAL: Remove the fadeIn animation that's interfering with transitions
-                        anim.element.style.animation = "none";
-
-                        // Explicitly set transition property
-                        anim.element.style.transition =
-                            "transform 0.6s ease-in-out, border-left-color 0.3s ease";
-
-                        anim.element.classList.add("reordering");
-
-                        // Set initial transform to 0 (important for transition to work)
-                        anim.element.style.transform = "translateY(0px)";
-
-                        // Add border color based on rank
-                        if (anim.targetIndex === 0) {
-                            anim.element.style.borderLeftColor = "#4caf50"; // Green for best
-                        } else if (anim.targetIndex === 1) {
-                            anim.element.style.borderLeftColor = "#ff9800"; // Orange for middle
-                        } else {
-                            anim.element.style.borderLeftColor = "#f44336"; // Red for worst
-                        }
-                    });
-
-                    // Step 2: Force reflow and wait for next frame, then apply transforms
-                    void answerTextEl.offsetHeight; // Force reflow
-
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            // Now apply the actual transforms
-                            animations.forEach((anim) => {
-                                const moveDistance =
-                                    (anim.targetIndex - anim.currentIndex) *
-                                    (avgHeight + margin);
-                                anim.element.style.transform = `translateY(${moveDistance}px)`;
-                                console.log(
-                                    `Moving ${anim.letter} by ${moveDistance}px (from ${anim.currentIndex} to ${anim.targetIndex})`,
-                                );
-                            });
-
-                            // Step 3: After animation completes, reorder DOM and add feedback labels
-                            setTimeout(() => {
-                                // Remove transforms and clean up
-                                animations.forEach((anim) => {
-                                    anim.element.style.transform = "";
-                                    anim.element.style.transition = "";
-                                    anim.element.style.animation = "";
-                                    anim.element.classList.remove("reordering");
-                                });
-
-                                // Keep the header
-                                const header =
-                                    answerTextEl.querySelector("strong");
-                                if (header) {
-                                    const headerClone = header.cloneNode(true);
-                                    answerTextEl.innerHTML = "";
-                                    answerTextEl.appendChild(headerClone);
-                                }
-
-                                // Reorder in DOM based on target order
-                                orderedRankings.forEach((ranking) => {
-                                    const anim = animations.find(
-                                        (a) => a.letter === ranking.letter,
-                                    );
-                                    if (anim) {
-                                        answerTextEl.appendChild(anim.element);
-
-                                        // Add feedback label
-                                        const feedbackLabel =
-                                            document.createElement("div");
-                                        feedbackLabel.className =
-                                            "feedback-label";
-                                        feedbackLabel.textContent = `✓ ${ranking.description}`;
-                                        anim.element.appendChild(feedbackLabel);
-                                    }
-                                });
-
-                                // Add footer message if exists
-                                const footer = tempDiv.querySelector("em");
-                                if (footer) {
-                                    answerTextEl.appendChild(
-                                        document.createElement("br"),
-                                    );
-                                    answerTextEl.appendChild(
-                                        footer.cloneNode(true),
-                                    );
-                                }
-                            }, 700); // Wait for 600ms transition + 100ms buffer
-                        });
-                    });
-                } else {
-                    // Fallback if no responses found
-                    answerTextEl.innerHTML = levelContent[stepName];
-                }
-            } else if (stepName === "Learn") {
-                // For Learn phase, animate responses merging together then fade in learning text
-                const currentResponses = Array.from(
-                    answerTextEl.querySelectorAll(".response-option"),
-                );
-                const header = answerTextEl.querySelector("strong");
-                const footer = answerTextEl.querySelector("em");
-                const sectionLabel =
-                    answerSection.querySelector(".section-label");
-
-                // Hide the Prompt section and Model Response label during Learn
-                promptSection.style.transition = "opacity 0.4s ease-out";
-                promptSection.style.opacity = "0";
-                if (sectionLabel) {
-                    sectionLabel.style.transition = "opacity 0.4s ease-out";
-                    sectionLabel.style.opacity = "0";
-                }
-                setTimeout(() => {
-                    promptSection.style.display = "none";
-                    if (sectionLabel) sectionLabel.style.display = "none";
-                }, 400);
-
-                if (currentResponses.length > 0) {
-                    // Step 1: Lock in current visible state before clearing animation
-                    // The fadeIn animation sets opacity to 1 via 'forwards' fill mode.
-                    // When we clear the animation, we lose that state, so set it explicitly first.
-                    currentResponses.forEach((response) => {
-                        response.style.opacity = "1";
-                    });
-
-                    // Also fade out header and footer
-                    if (header) {
-                        header.style.transition = "opacity 0.4s ease-out";
-                        header.style.opacity = "0";
-                    }
-                    if (footer) {
-                        footer.style.transition = "opacity 0.4s ease-out";
-                        footer.style.opacity = "0";
-                    }
-
-                    // Force reflow to ensure opacity: 1 is applied
-                    void answerTextEl.offsetHeight;
-
-                    // Step 2: Now clear animation and set up transitions for the merge
-                    currentResponses.forEach((response) => {
-                        response.style.animation = "none";
-                        response.style.transition =
-                            "transform 0.6s ease-in-out, opacity 0.5s ease-in-out 0.1s";
-                        response.classList.add("merging");
-                    });
-
-                    // Force reflow again to ensure animation: none takes effect
-                    void answerTextEl.offsetHeight;
-
-                    // Step 3: Calculate positions and apply transforms
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            // Get the first response's position as the merge target
-                            const firstRect =
-                                currentResponses[0].getBoundingClientRect();
-                            const targetY =
-                                firstRect.top + firstRect.height / 2;
-
-                            // Animate each response to merge toward the first response's position
-                            currentResponses.forEach((response) => {
-                                const rect = response.getBoundingClientRect();
-                                const offsetY =
-                                    targetY - (rect.top + rect.height / 2);
-
-                                // Move toward first response, scale down, and fade out
-                                response.style.transform = `translateY(${offsetY}px) scale(0.5)`;
-                                response.style.opacity = "0";
-                            });
-
-                            // Step 4: After merge animation completes, fade in learning content
-                            setTimeout(() => {
-                                // Clear the container
-                                answerTextEl.innerHTML = "";
-
-                                // Create the learning content with initial opacity 0
-                                const learningDiv =
-                                    document.createElement("div");
-                                learningDiv.className = "learning-content";
-                                learningDiv.innerHTML = levelContent[stepName];
-                                learningDiv.style.opacity = "0";
-                                learningDiv.style.transition =
-                                    "opacity 0.5s ease-in";
-                                answerTextEl.appendChild(learningDiv);
-
-                                // Force reflow then fade in
-                                void learningDiv.offsetHeight;
-                                learningDiv.style.opacity = "1";
-                            }, 600);
-                        });
-                    });
-                } else {
-                    // No responses to merge, just show content with fade-in
-                    const learningDiv = document.createElement("div");
-                    learningDiv.className = "learning-content";
-                    learningDiv.innerHTML = levelContent[stepName];
-                    learningDiv.style.opacity = "0";
-                    learningDiv.style.transition = "opacity 0.5s ease-in";
-                    answerTextEl.innerHTML = "";
-                    answerTextEl.appendChild(learningDiv);
-
-                    void learningDiv.offsetHeight;
-                    learningDiv.style.opacity = "1";
-                }
-            } else {
-                // For any other steps, display content immediately
-                answerTextEl.innerHTML = levelContent[stepName];
-            }
-
-            // After 1 second (animation complete)
-            setTimeout(() => {
-                // Deactivate segment
-                segments[stepName].classList.remove("active");
-
-                // Move to next step
-                currentStepIndex++;
-
-                // If we completed all 3 steps, increment training level
-                if (currentStepIndex >= steps.length) {
-                    currentStepIndex = 0;
-                    trainingLevelIndex++;
-
-                    // Cap at maximum training level
-                    if (trainingLevelIndex >= trainingLevels.length) {
-                        trainingLevelIndex = trainingLevels.length - 1;
-                    }
-
-                    updateTrainingStatus();
-                    updateButton();
-                }
-
-                isAnimating = false;
-                advanceBtn.disabled = false;
-            }, 1000);
+            currentPhase = "training";
+            updateButton();
         }
 
-        function reset() {
-            trainingLevelIndex = 0;
-            currentStepIndex = 0;
-            handRotation = 0;
+        // TRAINING Phase - single answer
+        async function trainWithAnswer(answer, answerNumber) {
+            // Step 1: Answer slides into LLM (0.4s)
+            answer.element.classList.add("training");
+
+            // Step 2: Simultaneously, meter increments
+            const currentPercent =
+                TRAINING_LEVELS[trainingLevel] +
+                (answerNumber + 1) * PERCENT_PER_ANSWER;
+            updateMeter(Math.min(currentPercent, 99));
+
+            await delay(400);
+
+            // Step 3: Remove answer block
+            answer.element.remove();
+
+            await delay(100);
+        }
+
+        // TRAINING Phase - train all answers sequentially
+        async function trainAllAnswers() {
+            const answersToTrain = [...currentAnswers];
+
+            for (let i = 0; i < answersToTrain.length; i++) {
+                await trainWithAnswer(answersToTrain[i], i);
+            }
+
+            // Training phase complete
+            currentAnswers = [];
+            trainingLevel++;
+            currentPhase = "create";
+            answersCreatedInPhase = 0;
+
+            const newLevel = TRAINING_LEVELS[trainingLevel];
+            if (newLevel === 100) {
+                currentPhase = "final";
+            }
+
+            updateMeter(newLevel);
+        }
+
+        // FINAL ANSWER Phase
+        async function showFinalAnswer() {
+            const finalText = content[100].final;
+
+            // Clear answers container
+            answersContainer.innerHTML = "";
+
+            // Create final answer block
+            const finalBlock = createAnswerBlock("Final", finalText);
+            finalBlock.querySelector(".answer-header").textContent =
+                "Final Answer";
+            answersContainer.appendChild(finalBlock);
+            finalBlock.classList.add("appearing", "rank-1");
+
+            await delay(500);
+
+            currentPhase = "complete";
+            updateButton();
+        }
+
+        // RESET
+        function executeReset() {
+            trainingLevel = 0;
+            currentPhase = "create";
+            answersCreatedInPhase = 0;
+            currentAnswers = [];
+            buttonState = "create";
             isAnimating = false;
 
-            clockHand.setAttribute("transform", "rotate(0 100 100)");
-            deactivateAllSegments();
-            promptSection.style.display = "none";
-            answerSection.style.display = "none";
-            answerTextEl.innerHTML = "";
-            updateTrainingStatus();
+            // Clear UI
+            answersContainer.innerHTML = "";
+            promptDisplay.textContent = "Explain quantum computing";
+            updateMeter(0);
             updateButton();
-            advanceBtn.disabled = false;
         }
 
-        // Event listeners
-        advanceBtn.addEventListener("click", advance);
+        // Button Click Handler
+        async function handleButtonClick() {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            actionButton.disabled = true;
+
+            try {
+                switch (buttonState) {
+                    case "create":
+                        await createAllAnswers();
+                        break;
+                    case "feedback":
+                        await applyFeedback();
+                        break;
+                    case "training":
+                        await trainAllAnswers();
+                        break;
+                    case "final":
+                        await showFinalAnswer();
+                        break;
+                    case "reset":
+                        executeReset();
+                        break;
+                }
+
+                updateButton();
+            } finally {
+                isAnimating = false;
+                actionButton.disabled = false;
+            }
+        }
 
         // Initialize
-        updateTrainingStatus();
+        actionButton.addEventListener("click", handleButtonClick);
+        updateMeter(0);
         updateButton();
     })();
 </script>
