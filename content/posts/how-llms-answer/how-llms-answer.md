@@ -101,6 +101,8 @@ system prompt shapes its personality and capabilities.
 
 ### Try it out yourself
 
+{{< system-prompt >}}
+
 ## 4. Tool Access Through System Prompt Description
 
 Modern LLMs are enhanced with the ability to use external tools, expanding their

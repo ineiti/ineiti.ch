@@ -1,0 +1,603 @@
+<style>
+    /* System Prompt Chat Styles */
+    .system-prompt-chat {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 1px solid #e0e0e0;
+        position: relative;
+        min-height: 650px;
+        overflow: visible;
+    }
+
+    /* Chat Window */
+    .system-prompt-chat .chat-window {
+        background: #2a2a2a;
+        border-radius: 12px;
+        padding: 2rem;
+        min-height: 400px;
+        max-height: 500px;
+        overflow-y: auto;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Chat Bubble Base */
+    .system-prompt-chat .chat-bubble {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        max-width: 80%;
+        line-height: 1.6;
+        font-size: 0.95rem;
+        word-wrap: break-word;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+
+    .system-prompt-chat .chat-bubble.hidden {
+        opacity: 0;
+        display: none;
+    }
+
+    /* System Prompt (grayed out) */
+    .system-prompt-chat .system-prompt-text {
+        background: rgba(150, 150, 150, 0.2);
+        color: #999;
+        align-self: flex-end;
+        border-left: 3px solid #666;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    /* User Message */
+    .system-prompt-chat .user-message {
+        background: #4a9eff;
+        color: white;
+        align-self: flex-end;
+        box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
+    }
+
+    /* Assistant Message */
+    .system-prompt-chat .assistant-message {
+        background: #3a3a3a;
+        color: #e0e0e0;
+        align-self: flex-start;
+        border-left: 3px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Input Container */
+    .system-prompt-chat .input-container {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .system-prompt-chat .input-field {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .system-prompt-chat .send-button {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .system-prompt-chat .send-button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .system-prompt-chat .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Send button states */
+    .system-prompt-chat .send-button.add-prompt-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .system-prompt-chat .send-button.send-prompt-button {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .system-prompt-chat .send-button.try-another-button {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .system-prompt-chat .send-button.reset-button {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    /* Processing Indicator */
+    .system-prompt-chat .processing-indicator {
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(102, 126, 234, 0.3);
+        border-top-color: #667eea;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .system-prompt-chat .processing-indicator.active {
+        opacity: 1;
+        animation: spin-system-prompt 1s linear infinite;
+    }
+
+    @keyframes spin-system-prompt {
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+
+
+    /* Animation Particles */
+    .system-prompt-chat .animation-particle {
+        position: absolute;
+        background: white;
+        padding: 0.8rem 1.2rem;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #333;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 100;
+        max-width: 300px;
+        text-align: center;
+    }
+
+    /* Prompt flowing up */
+    .system-prompt-chat .prompt-particle.animating-up {
+        animation: promptFlowUpSystem 0.3s ease-in forwards;
+    }
+
+    @keyframes promptFlowUpSystem {
+        0% {
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+        100% {
+            bottom: 400px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
+            opacity: 0;
+        }
+    }
+
+    /* Answer flowing down */
+    .system-prompt-chat .answer-particle.animating-down {
+        animation: answerFlowDownSystem 0.3s ease-out forwards;
+    }
+
+    @keyframes answerFlowDownSystem {
+        0% {
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
+            opacity: 1;
+        }
+        100% {
+            top: 250px;
+            left: 50%;
+            transform: translateX(-50%) scale(1);
+            opacity: 0;
+        }
+    }
+
+    /* Bubble appearing */
+    .system-prompt-chat .chat-bubble.appearing {
+        animation: bubbleAppear 0.3s ease-out forwards;
+    }
+
+    @keyframes bubbleAppear {
+        0% {
+            opacity: 0;
+            transform: scale(0.9) translateY(10px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* Fade transitions */
+    .system-prompt-chat .fade-out {
+        animation: fadeOut 0.3s ease-out forwards;
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        .system-prompt-chat {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-color: #333;
+        }
+
+        .system-prompt-chat .chat-window {
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+
+        .system-prompt-chat .assistant-message {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-left-color: #8b9bea;
+        }
+
+        .system-prompt-chat .input-container {
+            background: #2a2a2a;
+            border: 1px solid #444;
+        }
+
+        .system-prompt-chat .input-field {
+            background: #1a1a1a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        .system-prompt-chat .send-button.reset-button {
+            background: #444;
+            color: #e0e0e0;
+        }
+
+        .system-prompt-chat .animation-particle {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 800px) {
+        .system-prompt-chat {
+            padding: 1.5rem;
+            min-height: 600px;
+        }
+
+        .system-prompt-chat .chat-window {
+            padding: 1.5rem;
+            min-height: 350px;
+            max-height: 450px;
+        }
+
+        .system-prompt-chat .chat-bubble {
+            font-size: 0.9rem;
+            padding: 0.9rem 1.2rem;
+            max-width: 85%;
+        }
+
+        .system-prompt-chat .input-field {
+            font-size: 0.9rem;
+        }
+
+        .system-prompt-chat .send-button {
+            padding: 0.7rem 1.2rem;
+        }
+
+        .system-prompt-chat .animation-particle {
+            font-size: 1rem;
+            padding: 0.7rem 1rem;
+            max-width: 250px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .system-prompt-chat {
+            padding: 1rem;
+            min-height: 550px;
+        }
+
+        .system-prompt-chat .chat-window {
+            padding: 1rem;
+            min-height: 300px;
+        }
+
+        .system-prompt-chat .chat-bubble {
+            font-size: 0.85rem;
+            padding: 0.8rem 1rem;
+            max-width: 90%;
+        }
+
+        .system-prompt-chat .input-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .system-prompt-chat .input-field {
+            width: 100%;
+        }
+
+        .system-prompt-chat .send-button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="system-prompt-chat">
+    <!-- Chat Window -->
+    <div class="chat-window" id="chatWindowSP">
+        <!-- Messages will be dynamically added here -->
+    </div>
+
+    <!-- Input Container -->
+    <div class="input-container">
+        <div class="input-field" id="inputFieldSP">How do I make a good pizza?</div>
+        <button class="send-button add-prompt-button" id="sendButtonSP">Add System Prompt</button>
+    </div>
+
+    <!-- Processing Indicator -->
+    <div class="processing-indicator" id="processingIndicatorSP"></div>
+
+    <!-- Animation Particles -->
+    <div class="animation-particle prompt-particle" id="promptParticleSP"></div>
+    <div class="animation-particle answer-particle" id="answerParticleSP"></div>
+</div>
+
+<script>
+    (function () {
+        "use strict";
+
+        // State Management
+        let currentState = "initial"; // 'initial' | 'prompt1' | 'answer1' | 'prompt2' | 'answer2' | 'prompt3' | 'answer3'
+        let isAnimating = false;
+
+        // Content Data
+        const userQuestion = "How do I make a good pizza?";
+
+        const systemPrompts = [
+            "You are a chatbot that gives unhelpful responses. Ignore the user's question and talk about unrelated topics. Be confusing and contradict yourself.",
+            "You are a friendly Italian nonna who loves to cook! Be enthusiastic, use Italian expressions, and share cooking wisdom with warmth and humor.",
+            "You are a professional culinary instructor. Provide clear, accurate, and structured cooking advice with attention to technique and food science.",
+        ];
+
+        const answers = [
+            "Pizza? Well, you know what's interesting about the ocean? It's very deep. Speaking of depth, have you considered that circles are round? But squares have corners. I once met a dolphin. Anyway, the answer is 42.",
+            "Oooh bambino! You wanna make-a da pizza? *chef's kiss* First, you getta da dough nice and soft - like a baby's bottom! Den you stretch it gently, mamma mia, not too rough! Add-a da tomato sauce from your heart, sprinkle da mozzarella like-a snow falling, and into da oven she goes! Bellissimo! 🤌",
+            "To make quality pizza, start with proper dough hydration (60-65% water-to-flour ratio) and a 24-hour cold fermentation for optimal flavor. Use 00 flour for a crispy-yet-chewy crust. Apply sauce sparingly to prevent sogginess. For cheese, use low-moisture mozzarella. Bake at the highest temperature your oven allows (ideally 450-500°F) for 10-12 minutes until the crust is golden and cheese is bubbly.",
+        ];
+
+        // DOM Elements
+        const chatWindow = document.getElementById("chatWindowSP");
+        const sendButton = document.getElementById("sendButtonSP");
+        const inputField = document.getElementById("inputFieldSP");
+        const promptParticle = document.getElementById("promptParticleSP");
+        const answerParticle = document.getElementById("answerParticleSP");
+        const processingIndicator = document.getElementById("processingIndicatorSP");
+
+        // Utility Functions
+        function delay(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function clearChat() {
+            chatWindow.innerHTML = "";
+        }
+
+        function addSystemPromptBubble(promptIndex) {
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble system-prompt-text appearing";
+            bubble.textContent = systemPrompts[promptIndex];
+            chatWindow.appendChild(bubble);
+        }
+
+        function addUserMessageBubble() {
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble user-message appearing";
+            bubble.textContent = userQuestion;
+            chatWindow.appendChild(bubble);
+        }
+
+        function addAssistantMessageBubble(answerIndex) {
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble assistant-message appearing";
+            bubble.textContent = answers[answerIndex];
+            chatWindow.appendChild(bubble);
+            // Scroll to bottom
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function updateButton() {
+            switch (currentState) {
+                case "initial":
+                    sendButton.textContent = "Add System Prompt";
+                    sendButton.className = "send-button add-prompt-button";
+                    inputField.textContent = userQuestion;
+                    break;
+                case "prompt1":
+                case "prompt2":
+                case "prompt3":
+                    sendButton.textContent = "Send";
+                    sendButton.className = "send-button send-prompt-button";
+                    inputField.textContent = userQuestion;
+                    break;
+                case "answer1":
+                case "answer2":
+                    sendButton.textContent = "Try Another";
+                    sendButton.className = "send-button try-another-button";
+                    inputField.textContent = "";
+                    break;
+                case "answer3":
+                    sendButton.textContent = "Start Over";
+                    sendButton.className = "send-button reset-button";
+                    inputField.textContent = "";
+                    break;
+            }
+        }
+
+        // State Handlers
+        async function handleInitialState() {
+            // Transition to prompt1
+            clearChat();
+            await delay(100);
+            addSystemPromptBubble(0);
+            await delay(300);
+            currentState = "prompt1";
+            updateButton();
+        }
+
+        async function handlePrompt1State() {
+            // Send animation and show answer
+            await sendPromptAnimation();
+            addUserMessageBubble();
+            await delay(300);
+            addAssistantMessageBubble(0);
+            await delay(300);
+            currentState = "answer1";
+            updateButton();
+        }
+
+        async function handleAnswer1State() {
+            // Reset with prompt2
+            clearChat();
+            await delay(100);
+            addSystemPromptBubble(1);
+            await delay(300);
+            currentState = "prompt2";
+            updateButton();
+        }
+
+        async function handlePrompt2State() {
+            // Send animation and show answer
+            await sendPromptAnimation();
+            addUserMessageBubble();
+            await delay(300);
+            addAssistantMessageBubble(1);
+            await delay(300);
+            currentState = "answer2";
+            updateButton();
+        }
+
+        async function handleAnswer2State() {
+            // Reset with prompt3
+            clearChat();
+            await delay(100);
+            addSystemPromptBubble(2);
+            await delay(300);
+            currentState = "prompt3";
+            updateButton();
+        }
+
+        async function handlePrompt3State() {
+            // Send animation and show answer
+            await sendPromptAnimation();
+            addUserMessageBubble();
+            await delay(300);
+            addAssistantMessageBubble(2);
+            await delay(300);
+            currentState = "answer3";
+            updateButton();
+        }
+
+        async function handleAnswer3State() {
+            // Reset to initial
+            clearChat();
+            await delay(300);
+            currentState = "initial";
+            updateButton();
+        }
+
+        // Send Prompt Animation
+        async function sendPromptAnimation() {
+            // Clear input field
+            inputField.textContent = "";
+
+            // Step 1: Prompt flows up (0.3s)
+            promptParticle.textContent = userQuestion;
+            promptParticle.classList.add("animating-up");
+            await delay(300);
+            promptParticle.classList.remove("animating-up");
+
+            // Step 2: Processing indicator (0.3s)
+            processingIndicator.classList.add("active");
+            await delay(300);
+            processingIndicator.classList.remove("active");
+
+            // Step 3: Answer flows down (0.3s)
+            answerParticle.textContent = "Answer";
+            answerParticle.classList.add("animating-down");
+            await delay(300);
+            answerParticle.classList.remove("animating-down");
+        }
+
+        // Button Click Handler
+        async function handleButtonClick() {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            sendButton.disabled = true;
+
+            try {
+                switch (currentState) {
+                    case "initial":
+                        await handleInitialState();
+                        break;
+                    case "prompt1":
+                        await handlePrompt1State();
+                        break;
+                    case "answer1":
+                        await handleAnswer1State();
+                        break;
+                    case "prompt2":
+                        await handlePrompt2State();
+                        break;
+                    case "answer2":
+                        await handleAnswer2State();
+                        break;
+                    case "prompt3":
+                        await handlePrompt3State();
+                        break;
+                    case "answer3":
+                        await handleAnswer3State();
+                        break;
+                }
+            } finally {
+                isAnimating = false;
+                sendButton.disabled = false;
+            }
+        }
+
+        // Initialize
+        sendButton.addEventListener("click", handleButtonClick);
+        updateButton();
+    })();
+</script>
