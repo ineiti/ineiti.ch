@@ -118,7 +118,7 @@ capabilities beyond pure text generation:
 This transforms LLMs from pure conversational agents into interactive systems
 that can take actions and access real-time information.
 
-## 5. Bias and Bluffing
+## 5. Thinking, Bias and Bluffing
 
 Like every system, chatbots have a built-in bias given by their creators.
 During training, and by changing the system prompt, it is possible to

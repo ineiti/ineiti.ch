@@ -236,6 +236,25 @@
         }
     }
 
+    /* Bubble sending animation (clone moving down) */
+    .system-prompt-chat .chat-bubble.sending-clone {
+        position: absolute;
+        pointer-events: none;
+        z-index: 200;
+        animation: bubbleSendDown 0.6s ease-in forwards;
+    }
+
+    @keyframes bubbleSendDown {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(300px) scale(0.7);
+        }
+    }
+
     /* Fade transitions */
     .system-prompt-chat .fade-out {
         animation: fadeOut 0.3s ease-out forwards;
@@ -545,19 +564,48 @@
             // Clear input field
             inputField.textContent = "";
 
-            // Step 1: System prompt flows up (0.3s)
-            promptParticle.textContent = "System: " + systemPrompts[promptIndex].substring(0, 50) + "...";
-            promptParticle.classList.add("animating-up");
-            await delay(150);
+            // Get the system prompt and user message bubbles
+            const bubbles = chatWindow.querySelectorAll(".chat-bubble");
+            const systemPromptBubble = bubbles[0]; // System prompt is first
+            const userMessageBubble = bubbles[1]; // User message is second
 
-            // Step 2: User prompt flows up (overlapping, 0.3s)
-            answerParticle.textContent = userQuestion;
-            answerParticle.classList.add("animating-up");
-            await delay(300);
-            promptParticle.classList.remove("animating-up");
-            answerParticle.classList.remove("animating-up");
+            if (systemPromptBubble && userMessageBubble) {
+                // Clone system prompt bubble
+                const systemClone = systemPromptBubble.cloneNode(true);
+                const systemRect = systemPromptBubble.getBoundingClientRect();
+                const containerRect = chatWindow.getBoundingClientRect();
 
-            // Step 3: Processing indicator (0.3s)
+                systemClone.style.position = "absolute";
+                systemClone.style.top = (systemRect.top - containerRect.top) + "px";
+                systemClone.style.left = (systemRect.left - containerRect.left) + "px";
+                systemClone.style.width = systemRect.width + "px";
+                systemClone.classList.remove("appearing");
+                systemClone.classList.add("sending-clone");
+                chatWindow.appendChild(systemClone);
+
+                await delay(150);
+
+                // Clone user message bubble
+                const userClone = userMessageBubble.cloneNode(true);
+                const userRect = userMessageBubble.getBoundingClientRect();
+
+                userClone.style.position = "absolute";
+                userClone.style.top = (userRect.top - containerRect.top) + "px";
+                userClone.style.left = (userRect.left - containerRect.left) + "px";
+                userClone.style.width = userRect.width + "px";
+                userClone.classList.remove("appearing");
+                userClone.classList.add("sending-clone");
+                chatWindow.appendChild(userClone);
+
+                // Wait for animations to complete
+                await delay(600);
+
+                // Remove clones
+                systemClone.remove();
+                userClone.remove();
+            }
+
+            // Processing indicator
             processingIndicator.classList.add("active");
             await delay(300);
             processingIndicator.classList.remove("active");
