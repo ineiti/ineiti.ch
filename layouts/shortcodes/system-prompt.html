@@ -181,6 +181,10 @@
         animation: promptFlowUpSystem 0.3s ease-in forwards;
     }
 
+    .system-prompt-chat .answer-particle.animating-up {
+        animation: promptFlowUpSystem 0.3s ease-in forwards;
+    }
+
     @keyframes promptFlowUpSystem {
         0% {
             bottom: 140px;
@@ -476,12 +480,12 @@
         }
 
         async function handlePrompt1State() {
-            // Send animation and show answer
-            await sendPromptAnimation();
+            // Add user message immediately
             addUserMessageBubble();
-            await delay(300);
-            addAssistantMessageBubble(0);
-            await delay(300);
+            await delay(100);
+            // Send animation and show answer with typing effect
+            await sendPromptAnimation(0);
+            await addAssistantMessageWithTyping(0);
             currentState = "answer1";
             updateButton();
         }
@@ -497,12 +501,12 @@
         }
 
         async function handlePrompt2State() {
-            // Send animation and show answer
-            await sendPromptAnimation();
+            // Add user message immediately
             addUserMessageBubble();
-            await delay(300);
-            addAssistantMessageBubble(1);
-            await delay(300);
+            await delay(100);
+            // Send animation and show answer with typing effect
+            await sendPromptAnimation(1);
+            await addAssistantMessageWithTyping(1);
             currentState = "answer2";
             updateButton();
         }
@@ -518,12 +522,12 @@
         }
 
         async function handlePrompt3State() {
-            // Send animation and show answer
-            await sendPromptAnimation();
+            // Add user message immediately
             addUserMessageBubble();
-            await delay(300);
-            addAssistantMessageBubble(2);
-            await delay(300);
+            await delay(100);
+            // Send animation and show answer with typing effect
+            await sendPromptAnimation(2);
+            await addAssistantMessageWithTyping(2);
             currentState = "answer3";
             updateButton();
         }
@@ -537,26 +541,51 @@
         }
 
         // Send Prompt Animation
-        async function sendPromptAnimation() {
+        async function sendPromptAnimation(promptIndex) {
             // Clear input field
             inputField.textContent = "";
 
-            // Step 1: Prompt flows up (0.3s)
-            promptParticle.textContent = userQuestion;
+            // Step 1: System prompt flows up (0.3s)
+            promptParticle.textContent = "System: " + systemPrompts[promptIndex].substring(0, 50) + "...";
             promptParticle.classList.add("animating-up");
+            await delay(150);
+
+            // Step 2: User prompt flows up (overlapping, 0.3s)
+            answerParticle.textContent = userQuestion;
+            answerParticle.classList.add("animating-up");
             await delay(300);
             promptParticle.classList.remove("animating-up");
+            answerParticle.classList.remove("animating-up");
 
-            // Step 2: Processing indicator (0.3s)
+            // Step 3: Processing indicator (0.3s)
             processingIndicator.classList.add("active");
             await delay(300);
             processingIndicator.classList.remove("active");
+        }
 
-            // Step 3: Answer flows down (0.3s)
-            answerParticle.textContent = "Answer";
-            answerParticle.classList.add("animating-down");
-            await delay(300);
-            answerParticle.classList.remove("animating-down");
+        // Add Assistant Message with Typing Effect
+        async function addAssistantMessageWithTyping(answerIndex) {
+            const fullText = answers[answerIndex];
+            const words = fullText.split(" ");
+
+            // Create empty bubble
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble assistant-message appearing";
+            bubble.textContent = "";
+            chatWindow.appendChild(bubble);
+
+            await delay(200); // Small delay before typing starts
+
+            // Calculate delay per word to fit in ~1 second
+            const totalTime = 1000; // 1 second total
+            const delayPerWord = Math.max(20, totalTime / words.length);
+
+            // Add words one by one
+            for (let i = 0; i < words.length; i++) {
+                bubble.textContent += (i > 0 ? " " : "") + words[i];
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                await delay(delayPerWord);
+            }
         }
 
         // Button Click Handler
