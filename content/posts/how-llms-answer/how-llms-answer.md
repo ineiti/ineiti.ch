@@ -60,6 +60,16 @@ See how training improves predictions. Start with a 25% trained model and work y
 
 {{< llm-predictor >}}
 
+### Take-away
+
+An LLM
+
+- takes a list of words as input and outputs the most probable next word
+- is called in a loop, and the output of step `n` is appended to the input
+for the step `n + 1`
+- is trained on large amounts of data to learn what is the most probable
+next word
+
 ## 2. Reinforcement Learning with Human Feedback (RLHF)
 
 The base model can predict next words and create sentences which are
@@ -83,6 +93,14 @@ producing statistically likely text.
 
 {{< rlhf-cycle >}}
 
+### Take-away
+
+During RLHF, an LLM
+
+- learns human preferences in communications
+- learns best practices when answering questions
+- is taught limitations on what it should answer (alignment)
+
 ## 3. Adding a System Prompt for Business Direction
 
 The last part of the training consists of writing a system prompt.
@@ -98,10 +116,20 @@ hidden system prompt that guides its behavior:
 
 This is why the same LLM can behave differently across various platforms - the
 system prompt shapes its personality and capabilities.
+Anthropic shares the system prompts for their chat interfaces[^system_prompt_anthropic],
+while other chat interfaces like OpenAI don't reveal their system prompts.
 
 ### Try it out yourself
 
 {{< system-prompt >}}
+
+### Take-away
+
+Thanks to the system prompt
+
+- the behaviour of the LLM can be changed at the click of a button
+- no lengthy and expensive learning process is necessary
+- the LLM can be taught up-to-date information and specific behaviours
 
 ## 4. Tool Access Through System Prompt Description
 
@@ -118,7 +146,53 @@ capabilities beyond pure text generation:
 This transforms LLMs from pure conversational agents into interactive systems
 that can take actions and access real-time information.
 
-## 5. Thinking, Bias and Bluffing
+### Try it out yourself
+
+{{< tools-use >}}
+
+### Take-away
+
+Tools allow LLMs to
+
+- have access to up-to-date information
+- interact with your computer to read and write files
+- overcome some of the limitations of LLMs like limited calculation capabilities
+
+## 5. Thinking, Bias and Bluffing (aka Hallucinations)
+
+To close this short introduction to LLMs, here some more buzzwords you
+might have read regarding LLMs:
+
+- Thinking - allows the LLM to use its output as a notebook
+- Bias - is the worldview of the LLM, given by its training data
+- Bluffing - when the LLM wants to be helpful, but should keep silent
+
+### Thinking
+
+To predict the next word of the output, an LLM takes into account
+only the input and what it learnt.
+Even though this input is comprised of the system prompt, the tooling
+instructions, and the user prompt, the LLM doesn't have a short-term
+memory like our brain does.
+To overcome this shortcoming, most modern LLMs now use a "thinking"
+mode: if it outputs words, they are fed back to the input, so it can
+use its output as a notepad.
+Technically, the LLM is taught to start the output with a keyword like
+"Start thinking", and then the chat interface hides all the following output
+from the user, but still feeds it back to the LLM as the input.
+The LLM can then use this technique to do a chain of thought,
+which helps it under some circumstances to come up with a better
+answer.
+It is also taught to produce a "Stop thinking" keyword, after which
+the output is shown again to the user.
+This is similar to what you can see in the Tools Use animation.
+
+An interesting research paper from Apple [^illusionOfThinking]
+shows the limits of LLMs with regards to this thinking process:
+for simple prompts, thinking sometimes makes the answers less accurate!
+It only helps for complex prompts.
+
+### Bias
 
 Like every system, chatbots have a built-in bias given by their creators.
 During training, and by changing the system prompt, it is possible to
@@ -126,14 +200,14 @@ change the way a chatbot answers [^ElonGrok].
 When reading the answer, it is important to know the worldview of the 
 creators of the bot.
 
-Another big element is called **Hallucinations**, but I prefer the
-term **Bluffing**.
-A chatbot is mostly unaware of the confidence it has in an answer,
-and will readily propose a random fact as the authoritative answer.
+### Bluffing
+
+Sometimes wrong answers are attributed to **Hallucinations**, 
+but I prefer the term **Bluffing**, because of the confidence
+with which an LLM presents even wrong answers.
 This is made worse by the eloquence a chatbot has: its answers
-are grammatically correct, but the content can be pure bluff.
-An interesting research paper from Apple [^illusionOfThinking]
-shows the limits of LLMs with regards to reasoning.
+are grammatically correct, which makes most humans believe that
+the content also must be correct.
 
 So whatever answer an LLM gives you, it must be treated with extreme
 care!
@@ -148,8 +222,6 @@ It is important to understand the limitations of these tools, and the
 subtle way they can lead us astray.
 
 ### Further Reading
-
-
 
 [^transformers]: [Attention is all you need](https://en.wikipedia.org/wiki/Attention_Is_All_You_Need)
 [^towardsdatascience]: [Energy usage to train and run an LLM](https://towardsdatascience.com/lets-analyze-openais-claims-about-chatgpt-energy-use/)

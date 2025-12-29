@@ -1,0 +1,621 @@
+<style>
+    /* Tools Use Chat Styles */
+    .tools-use-chat {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border: 1px solid #e0e0e0;
+        position: relative;
+        min-height: 650px;
+        overflow: visible;
+    }
+
+    /* Chat Window */
+    .tools-use-chat .chat-window {
+        background: #2a2a2a;
+        border-radius: 12px;
+        padding: 2rem;
+        min-height: 400px;
+        max-height: 500px;
+        overflow-y: auto;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* Chat Bubble Base */
+    .tools-use-chat .chat-bubble {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        max-width: 80%;
+        line-height: 1.6;
+        font-size: 0.95rem;
+        word-wrap: break-word;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+
+    .tools-use-chat .chat-bubble.hidden {
+        opacity: 0;
+        display: none;
+    }
+
+    /* Common style for all "hidden" internal elements (system prompt, tools, thinking, results) */
+    .tools-use-chat .internal-hidden-style {
+        color: #8a98c0;
+        font-style: italic;
+        font-size: 0.85rem;
+    }
+
+    /* System Prompt (grayed out) */
+    .tools-use-chat .system-prompt-text {
+        background: rgba(150, 150, 150, 0.2);
+        align-self: flex-end;
+        border-left: 3px solid #666;
+    }
+
+    /* Tools Description (grayed out, similar to system prompt) */
+    .tools-use-chat .tools-text {
+        background: rgba(150, 150, 150, 0.2);
+        align-self: flex-end;
+        border-left: 3px solid #666;
+    }
+
+    /* User Message */
+    .tools-use-chat .user-message {
+        background: #4a9eff;
+        color: white;
+        align-self: flex-end;
+        box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
+    }
+
+    /* Thinking Message (contains both grayed and normal text) */
+    .tools-use-chat .thinking-message {
+        background: rgba(58, 58, 58, 0.5);
+        color: #e0e0e0;
+        align-self: flex-start;
+        border: 2px dashed rgba(102, 126, 234, 0.4);
+        border-left: 3px dashed #667eea;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        opacity: 0.85;
+    }
+
+    .tools-use-chat .thinking-text {
+        /* Color and font-style inherited from .internal-hidden-style */
+    }
+
+    .tools-use-chat .result-text {
+        color: #8ac098;
+    }
+
+    /* Tool result bubble - external data from tool (separate bubble) */
+    .tools-use-chat .tool-result-bubble {
+        background: rgba(102, 126, 234, 0.1);
+        border: 2px dashed rgba(102, 126, 234, 0.4);
+        border-left: 3px dashed rgba(102, 126, 234, 0.6);
+        align-self: flex-start;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        max-width: 75%;
+        opacity: 0.85;
+        /* Color and font-style inherited from .internal-hidden-style */
+    }
+
+    /* Assistant Message */
+    .tools-use-chat .assistant-message {
+        background: #3a3a3a;
+        color: #e0e0e0;
+        align-self: flex-start;
+        border-left: 3px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Input Container */
+    .tools-use-chat .input-container {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .tools-use-chat .input-field {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .tools-use-chat .send-button {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .tools-use-chat .send-button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .tools-use-chat .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Send button states */
+    .tools-use-chat .send-button.add-system-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .tools-use-chat .send-button.add-tools-button {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .tools-use-chat .send-button.send-button-style {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .tools-use-chat .send-button.show-result-button {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .tools-use-chat .send-button.reset-button-style {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    /* Processing Indicator */
+    .tools-use-chat .processing-indicator {
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(102, 126, 234, 0.3);
+        border-top-color: #667eea;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .tools-use-chat .processing-indicator.active {
+        opacity: 1;
+        animation: spin-tools-use 1s linear infinite;
+    }
+
+    @keyframes spin-tools-use {
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+
+    /* Bubble appearing */
+    .tools-use-chat .chat-bubble.appearing {
+        animation: bubbleAppearTools 0.3s ease-out forwards;
+    }
+
+    @keyframes bubbleAppearTools {
+        0% {
+            opacity: 0;
+            transform: scale(0.9) translateY(10px);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        .tools-use-chat {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-color: #333;
+        }
+
+        .tools-use-chat .chat-window {
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+
+        /* Common style for internal elements in dark mode */
+        .tools-use-chat .internal-hidden-style {
+            color: #8a98c0;
+            /* font-style and font-size remain the same */
+        }
+
+        .tools-use-chat .thinking-message {
+            background: rgba(42, 42, 42, 0.5);
+            color: #e0e0e0;
+            border: 2px dashed rgba(139, 155, 234, 0.4);
+            border-left: 3px dashed #8b9bea;
+        }
+
+        .tools-use-chat .assistant-message {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-left-color: #8b9bea;
+        }
+
+        .tools-use-chat .input-container {
+            background: #2a2a2a;
+            border: 1px solid #444;
+        }
+
+        .tools-use-chat .input-field {
+            background: #1a1a1a;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        .tools-use-chat .send-button.reset-button-style {
+            background: #444;
+            color: #e0e0e0;
+        }
+
+        .tools-use-chat .tool-result-bubble {
+            background: rgba(139, 155, 234, 0.15);
+            border: 2px dashed rgba(139, 155, 234, 0.4);
+            border-left: 3px dashed rgba(139, 155, 234, 0.6);
+            /* Color inherited from .internal-hidden-style */
+        }
+
+        .tools-use-chat .result-text {
+            color: #8ac098;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 800px) {
+        .tools-use-chat {
+            padding: 1.5rem;
+            min-height: 600px;
+        }
+
+        .tools-use-chat .chat-window {
+            padding: 1.5rem;
+            min-height: 350px;
+            max-height: 450px;
+        }
+
+        .tools-use-chat .chat-bubble {
+            font-size: 0.9rem;
+            padding: 0.9rem 1.2rem;
+            max-width: 85%;
+        }
+
+        .tools-use-chat .input-field {
+            font-size: 0.9rem;
+        }
+
+        .tools-use-chat .send-button {
+            padding: 0.7rem 1.2rem;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .tools-use-chat {
+            padding: 1rem;
+            min-height: 550px;
+        }
+
+        .tools-use-chat .chat-window {
+            padding: 1rem;
+            min-height: 300px;
+        }
+
+        .tools-use-chat .chat-bubble {
+            font-size: 0.85rem;
+            padding: 0.8rem 1rem;
+            max-width: 90%;
+        }
+
+        .tools-use-chat .input-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .tools-use-chat .input-field {
+            width: 100%;
+        }
+
+        .tools-use-chat .send-button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="tools-use-chat">
+    <!-- Chat Window -->
+    <div class="chat-window" id="chatWindowTU">
+        <!-- Messages will be dynamically added here -->
+    </div>
+
+    <!-- Input Container -->
+    <div class="input-container">
+        <div class="input-field" id="inputFieldTU">
+            What is the population of Tokyo?
+        </div>
+        <button class="send-button add-system-button" id="sendButtonTU">
+            Add System Prompt
+        </button>
+    </div>
+
+    <!-- Processing Indicator -->
+    <div class="processing-indicator" id="processingIndicatorTU"></div>
+</div>
+
+<script>
+    (function () {
+        "use strict";
+
+        // State Management
+        let currentState = "initial"; // 'initial' | 'system-added' | 'tools-added' | 'thinking' | 'complete'
+        let isAnimating = false;
+
+        // Content Data
+        const userQuestion = "What is the population of Tokyo?";
+        const systemPrompt =
+            "You are a helpful AI assistant that provides accurate, well-researched answers to user questions.";
+        const toolsDescription =
+            "Available tools:<br>- Web Search: Search the internet for current information<br>- Calculator: Perform mathematical calculations";
+
+        const thinkingIntro =
+            "I need current population data for Tokyo. Let me search for this information.";
+        const toolCall = "→ call: Web Search('Tokyo population 2025')";
+        const toolResult =
+            "← result:<br>Wikipedia - Tokyo<br>Tokyo has approximately 14 million people in the city proper and 37 million in the greater metropolitan area as of 2025.";
+
+        const finalAnswer =
+            "According to recent data, Tokyo has approximately 14 million people in the city proper, and about 37 million in the greater metropolitan area, making it one of the world's largest urban areas.";
+
+        // DOM Elements
+        const chatWindow = document.getElementById("chatWindowTU");
+        const sendButton = document.getElementById("sendButtonTU");
+        const inputField = document.getElementById("inputFieldTU");
+        const processingIndicator = document.getElementById(
+            "processingIndicatorTU",
+        );
+
+        // Utility Functions
+        function delay(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function clearChat() {
+            chatWindow.innerHTML = "";
+        }
+
+        function addSystemPromptBubble() {
+            const bubble = document.createElement("div");
+            bubble.className =
+                "chat-bubble system-prompt-text internal-hidden-style appearing";
+            bubble.textContent = systemPrompt;
+            chatWindow.appendChild(bubble);
+        }
+
+        function addToolsBubble() {
+            const bubble = document.createElement("div");
+            bubble.className =
+                "chat-bubble tools-text internal-hidden-style appearing";
+            bubble.innerHTML = toolsDescription;
+            chatWindow.appendChild(bubble);
+        }
+
+        function addUserMessageBubble() {
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble user-message appearing";
+            bubble.textContent = userQuestion;
+            chatWindow.appendChild(bubble);
+        }
+
+        async function addThinkingBubble() {
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble thinking-message appearing";
+            chatWindow.appendChild(bubble);
+
+            // Step 1: Show thinking intro word-by-word
+            const thinkingSpan1 = document.createElement("span");
+            thinkingSpan1.className = "thinking-text internal-hidden-style";
+            bubble.appendChild(thinkingSpan1);
+
+            const thinkingWords = thinkingIntro.split(" ");
+            const thinkingDelay = Math.max(20, 800 / thinkingWords.length);
+            for (let i = 0; i < thinkingWords.length; i++) {
+                thinkingSpan1.textContent +=
+                    (i > 0 ? " " : "") + thinkingWords[i];
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                await delay(thinkingDelay);
+            }
+
+            await delay(200);
+
+            // Step 2: Show tool call on new line word-by-word
+            const lineBreak1 = document.createElement("br");
+            bubble.appendChild(lineBreak1);
+            const lineBreak2 = document.createElement("br");
+            bubble.appendChild(lineBreak2);
+
+            const toolCallSpan = document.createElement("span");
+            toolCallSpan.className = "thinking-text internal-hidden-style";
+            bubble.appendChild(toolCallSpan);
+
+            const toolCallWords = toolCall.split(" ");
+            const toolCallDelay = Math.max(20, 500 / toolCallWords.length);
+            for (let i = 0; i < toolCallWords.length; i++) {
+                toolCallSpan.textContent +=
+                    (i > 0 ? " " : "") + toolCallWords[i];
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                await delay(toolCallDelay);
+            }
+
+            await delay(400);
+
+            // Step 3: Show result in separate bubble
+            const resultBubble = document.createElement("div");
+            resultBubble.className = "chat-bubble thinking-message appearing";
+            const resultSpan = document.createElement("span");
+            resultSpan.className =
+                "thinking-text internal-hidden-style result-text";
+            resultSpan.innerHTML = toolResult;
+            resultBubble.appendChild(resultSpan);
+            chatWindow.appendChild(resultBubble);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            await delay(300);
+        }
+
+        async function addAssistantMessageWithTyping() {
+            const words = finalAnswer.split(" ");
+
+            // Create empty bubble
+            const bubble = document.createElement("div");
+            bubble.className = "chat-bubble assistant-message appearing";
+            bubble.textContent = "";
+            chatWindow.appendChild(bubble);
+
+            await delay(200); // Small delay before typing starts
+
+            // Calculate delay per word to fit in ~1.5 seconds
+            const totalTime = 1500;
+            const delayPerWord = Math.max(20, totalTime / words.length);
+
+            // Add words one by one
+            for (let i = 0; i < words.length; i++) {
+                bubble.textContent += (i > 0 ? " " : "") + words[i];
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                await delay(delayPerWord);
+            }
+        }
+
+        function updateButton() {
+            switch (currentState) {
+                case "initial":
+                    sendButton.textContent = "Add System Prompt";
+                    sendButton.className = "send-button add-system-button";
+                    inputField.textContent = userQuestion;
+                    break;
+                case "system-added":
+                    sendButton.textContent = "Add Tools";
+                    sendButton.className = "send-button add-tools-button";
+                    inputField.textContent = userQuestion;
+                    break;
+                case "tools-added":
+                    sendButton.textContent = "Send";
+                    sendButton.className = "send-button send-button-style";
+                    inputField.textContent = userQuestion;
+                    break;
+                case "thinking":
+                    sendButton.textContent = "Show Result";
+                    sendButton.className = "send-button show-result-button";
+                    inputField.textContent = "";
+                    break;
+                case "complete":
+                    sendButton.textContent = "Start Over";
+                    sendButton.className = "send-button reset-button-style";
+                    inputField.textContent = "";
+                    break;
+            }
+        }
+
+        // State Handlers
+        async function handleInitialState() {
+            // Add system prompt
+            clearChat();
+            await delay(100);
+            addSystemPromptBubble();
+            await delay(300);
+            currentState = "system-added";
+            updateButton();
+        }
+
+        async function handleSystemAddedState() {
+            // Add tools description
+            addToolsBubble();
+            await delay(300);
+            currentState = "tools-added";
+            updateButton();
+        }
+
+        async function handleToolsAddedState() {
+            // Add user message and show processing
+            addUserMessageBubble();
+            await delay(100);
+
+            // Clear input field
+            inputField.textContent = "";
+
+            // Processing indicator
+            processingIndicator.classList.add("active");
+            await delay(800);
+            processingIndicator.classList.remove("active");
+
+            // Add thinking bubble with progressive display (includes tool result)
+            await addThinkingBubble();
+
+            // Automatically show final answer with typing effect
+            await delay(200);
+            await addAssistantMessageWithTyping();
+
+            currentState = "complete";
+            updateButton();
+        }
+
+        async function handleCompleteState() {
+            // Reset to initial
+            clearChat();
+            await delay(300);
+            currentState = "initial";
+            updateButton();
+        }
+
+        // Button Click Handler
+        async function handleButtonClick() {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            sendButton.disabled = true;
+
+            try {
+                switch (currentState) {
+                    case "initial":
+                        await handleInitialState();
+                        break;
+                    case "system-added":
+                        await handleSystemAddedState();
+                        break;
+                    case "tools-added":
+                        await handleToolsAddedState();
+                        break;
+                    case "thinking":
+                        await handleThinkingState();
+                        break;
+                    case "complete":
+                        await handleCompleteState();
+                        break;
+                }
+            } finally {
+                isAnimating = false;
+                sendButton.disabled = false;
+            }
+        }
+
+        // Initialize
+        sendButton.addEventListener("click", handleButtonClick);
+        updateButton();
+    })();
+</script>
