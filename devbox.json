@@ -22,6 +22,10 @@
       "update": [
         "git pull",
         "hugo"
+      ],
+      "update-draft": [
+        "git pull",
+        "hugo -D -d public.draft -b https://draft.ineiti.ch"
       ]
     }
   }
