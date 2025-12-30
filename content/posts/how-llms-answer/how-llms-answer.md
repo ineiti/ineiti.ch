@@ -58,9 +58,9 @@ can see appearing on the screen.
 The most basic version of an LLM is called a *Base Model*.
 It is trained on all kinds of documents available on the internet:
 news articles, books, chats, emails, videos, images.
-This base model is not very smart, but can predict next words which
-fit the patterns, grammer, facts of all the languages it has been
-trained on.
+This base model cannot yet follow instructions or answer questions effectively,
+but can predict next words which fit the patterns, grammer, facts of all the
+languages it has been trained on.
 
 For this pre-training of the base model:
 - About 10PB of data[^trainingdata],
@@ -99,12 +99,13 @@ The base model can predict next words and create sentences which are
 grammatically correct, but it cannot answer questions.
 To transform the base model into something that can answer questions naturally,
 we apply Reinforcement Learning with Human Feedback (RLHF).
-First the model creates a set of answers to a given question, then humans
-rank these answers, and finally the model is trained to give answers 
-similar to those preferred by humans.
-This teaches the model to be helpful, harmless, and honest, and makes 
-the model learn conversational patterns and how to structure answers in ways
-humans find useful.
+First the model creates a set of answers to a given question, then paid
+human annotators rank these answers according to guidelines provided by
+the model creators, and finally the model is trained to give answers
+similar to those preferred by the annotators.
+This teaches the model to be helpful, harmless, and honest according to
+the model creators' values, and makes the model learn conversational patterns
+and how to structure answers in ways humans find useful.
 
 The RLHF and alignment training takes only 10% to 20% of the full training
 time[^apertusTechnical].
@@ -134,8 +135,9 @@ hidden system prompt that guides its behavior:
 
 - The system prompt sets the context, tone, and constraints for the model
 - It can define the model's role (e.g., "You are a helpful coding assistant")
-- It includes safety guidelines and boundaries for what the model should and
-  shouldn't do
+- It includes safety guidelines (combining legal requirements, social norms,
+  and the creators' preferences) that define boundaries for what the model
+  should and shouldn't do
 - Different applications use different system prompts to customize the same
   underlying model
 
@@ -193,7 +195,8 @@ To close this short introduction to LLMs, here some more buzzwords you
 might have read regarding LLMs:
 
 - Thinking - allows the LLM to use its output as a notebook
-- Bias - is the worldview of the LLM, given by its training data
+- Bias - reflects both the worldview of its creators and the biases present
+  in the training data
 - Bluffing - when the LLM wants to be helpful, but should keep silent
 
 ### Thinking {#thinking}
@@ -223,11 +226,18 @@ It only helps for complex prompts.
 
 ### Bias {#bias}
 
-Like every system, chatbots have a built-in bias given by their creators.
+Like every system, chatbots have built-in biases from multiple sources.
+First, they inherit and amplify biases already present in their training data,
+which may include stereotypes, underrepresentation of certain groups, or
+historical prejudices found on the internet.
+Second, the creators' worldview influences the model through RLHF guidelines
+and system prompts.
 During training, and by changing the system prompt, it is possible to
 change the way a chatbot answers [^ElonGrok].
-When reading the answer, it is important to know the worldview of the 
-creators of the bot.
+This can be problematic as it may perpetuate unfair stereotypes, provide
+unbalanced perspectives on controversial topics, or inadvertently discriminate
+against certain groups.
+When reading the answer, it is important to be aware of these potential biases.
 
 ### Bluffing {#bluffing}
 
@@ -253,9 +263,10 @@ It is important to understand the limitations of these tools, and the
 subtle way they can lead us astray.
 
 An LLM does not have a reliable representation of its knowledge.
-Somebody wrote: "An LLM is like a 50 year old person having surfed
-the internet for a long time - they remember a lot, but most of their
-memory is based on wrong sources, or fake memories."
+A helpful analogy: an LLM is like a person who has absorbed vast amounts
+of information from the internet - they remember a lot, but their memory
+is a mix of accurate facts, outdated information, and misconceptions, all
+blended together without clear source attribution.
 Using tools, this problem can be reduced a bit, but bias and bluffing
 remain a big challenge.
 
