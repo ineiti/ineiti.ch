@@ -4,7 +4,8 @@
     "hugo@latest",
     "openssh@latest",
     "nodejs@20",
-    "git@latest"
+    "git@latest",
+    "go@latest"
   ],
   "shell": {
     "init_hook": [

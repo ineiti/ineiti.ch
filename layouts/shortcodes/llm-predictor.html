@@ -489,7 +489,7 @@
                 buttonState = "train";
             } else {
                 // State: Predict
-                actionButton.textContent = "Predict Next Word";
+                actionButton.textContent = "Predict Next Words";
                 actionButton.className = "action-button predict-button";
                 buttonState = "predict";
             }
@@ -600,7 +600,13 @@
             try {
                 switch (buttonState) {
                     case "predict":
-                        await executePrediction();
+                        // Predict multiple words in sequence
+                        while (predictionsAtCurrentLevel < MAX_PREDICTIONS_PER_LEVEL) {
+                            await executePrediction();
+                            if (predictionsAtCurrentLevel < MAX_PREDICTIONS_PER_LEVEL) {
+                                await delay(200);
+                            }
+                        }
                         break;
                     case "train":
                         await executeTraining();

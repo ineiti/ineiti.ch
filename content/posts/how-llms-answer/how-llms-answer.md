@@ -8,21 +8,34 @@ categories = ['AI', 'Technology']
 tags = ['LLM', 'Machine Learning', 'AI', 'Natural Language Processing']
 +++
 
-We are getting used to have a conversation with our computers in a
-way which was not possible just five years ago.
 The dream of an interaction with our computers through language is
 very old, and many different systems have been tried.
-A breakthrough has been reached in 2022 with a so-called
-*Large Language Model*, based on Transformers[^transformers],
-which is able to interact with its users in natural language.
+A breakthrough has been reached in 2022 with
+*Large Language Models*, based on Transformers[^transformers],
+which are able to interact through natural language.
+Nowadays we have a conversation with our computers in a
+way which was not possible just five years ago.
 
-But how do they work?
+But how does this work?
 Where do Large Language Models (LLMs) get their information from?
 And why do they sometimes create answers which sound
 correct, but are completely wrong?
+Let's simplify an interaction with a service like https://chat.deepseek.com
+with the following components:
 
-Read on to learn how LLMs are trained to create more and more
-sophisticated answers to our questions!
+```mermaid
+sequenceDiagram
+    participant Alice
+    participant Bob
+    Alice->>John: Hello John, how are you?
+    loop Healthcheck
+        John->>John: Fight against hypochondria
+    end
+    Note right of John: Rational thoughts <br/>prevail!
+    John-->>Alice: Great!
+    John->>Bob: How about you?
+    Bob-->>John: Jolly good!
+```
 
 ## 1. Creating a Base Model Through Pre-training
 
