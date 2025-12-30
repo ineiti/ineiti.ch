@@ -23,21 +23,27 @@ correct, but are completely wrong?
 Let's simplify an interaction with a service like https://chat.deepseek.com
 with the following components:
 
-```mermaid
-sequenceDiagram
-    participant Alice
-    participant Bob
-    Alice->>John: Hello John, how are you?
-    loop Healthcheck
-        John->>John: Fight against hypochondria
-    end
-    Note right of John: Rational thoughts <br/>prevail!
-    John-->>Alice: Great!
-    John->>Bob: How about you?
-    Bob-->>John: Jolly good!
-```
+<div style="text-align: center;">
 
-## 1. Creating a Base Model Through Pre-training
+{{< mermaid >}}
+graph TD
+    A[User Prompt] --Prompt--> B[Chat Interface]
+    B --Answer--> A
+    B <--> C[LLM]
+    B <--> D[Tools]
+{{< /mermaid >}}
+
+</div>
+
+To learn more about how an LLM is created, the [Base Model](#base-model) and
+[RLHF](#rlhf) sections explain how such a model is trained.
+The **Chat Interface** adds additional text to every user prompt, called
+the [System Prompt](#system-prompt), and will use [Tools](#tools) if the
+LLM requests them.
+
+---
+
+## 1. Creating a Base Model Through Pre-training {#base-model}
 
 Without going into the technical details, a Large Language Model (LLM)
 can be simplified as a *next word prediction program*.
@@ -77,13 +83,17 @@ See how training improves predictions. Start with a 25% trained model and work y
 
 An LLM
 
-- takes a list of words as input and outputs the most probable next word
+- takes a list of words as input and then outputs the most probable next word
 - is called in a loop, and the output of step `n` is appended to the input
 for the step `n + 1`
 - is trained on large amounts of data to learn what is the most probable
 next word
+- does not have a database or reliable source of knowledge - it has a fuzzy
+representation of everything it has been trained on
 
-## 2. Reinforcement Learning with Human Feedback (RLHF)
+---
+
+## 2. Reinforcement Learning with Human Feedback (RLHF) {#rlhf}
 
 The base model can predict next words and create sentences which are
 grammatically correct, but it cannot answer questions.
@@ -114,7 +124,9 @@ During RLHF, an LLM
 - learns best practices when answering questions
 - is taught limitations on what it should answer (alignment)
 
-## 3. Adding a System Prompt for Business Direction
+---
+
+## 3. Adding a System Prompt for Business Direction {#system-prompt}
 
 The last part of the training consists of writing a system prompt.
 In fact, when you interact with an LLM through a specific application, there's usually a
@@ -144,7 +156,9 @@ Thanks to the system prompt
 - no lengthy and expensive learning process is necessary
 - the LLM can be taught up-to-date information and specific behaviours
 
-## 4. Tool Access Through System Prompt Description
+---
+
+## 4. Tool Access Through System Prompt Description {#tools}
 
 Modern LLMs are enhanced with the ability to use external tools, expanding their
 capabilities beyond pure text generation:
@@ -171,7 +185,9 @@ Tools allow LLMs to
 - interact with your computer to read and write files
 - overcome some of the limitations of LLMs like limited calculation capabilities
 
-## 5. Thinking, Bias and Bluffing (aka Hallucinations)
+---
+
+## 5. Thinking, Bias and Bluffing (aka Hallucinations) {#advanced}
 
 To close this short introduction to LLMs, here some more buzzwords you
 might have read regarding LLMs:
@@ -180,7 +196,7 @@ might have read regarding LLMs:
 - Bias - is the worldview of the LLM, given by its training data
 - Bluffing - when the LLM wants to be helpful, but should keep silent
 
-### Thinking
+### Thinking {#thinking}
 
 To predict the next word of the output, an LLM takes into account
 only the input and what it learnt.
@@ -205,7 +221,7 @@ shows the limits of LLMs with regards to this thinking process:
 for simple prompts, thinking sometimes makes the answers less accurate!
 It only helps for complex prompts.
 
-### Bias
+### Bias {#bias}
 
 Like every system, chatbots have a built-in bias given by their creators.
 During training, and by changing the system prompt, it is possible to
@@ -213,7 +229,7 @@ change the way a chatbot answers [^ElonGrok].
 When reading the answer, it is important to know the worldview of the 
 creators of the bot.
 
-### Bluffing
+### Bluffing {#bluffing}
 
 Sometimes wrong answers are attributed to **Hallucinations**, 
 but I prefer the term **Bluffing**, because of the confidence
@@ -225,7 +241,9 @@ the content also must be correct.
 So whatever answer an LLM gives you, it must be treated with extreme
 care!
 
-## Conclusion
+---
+
+## Conclusion {#conclusion}
 
 The journey from raw text on the internet to an LLM that answers
 your questions involves multiple sophisticated layers. 
@@ -234,7 +252,15 @@ creating the chatbots we interact with today.
 It is important to understand the limitations of these tools, and the
 subtle way they can lead us astray.
 
-### Further Reading
+An LLM does not have a reliable representation of its knowledge.
+Somebody wrote: "An LLM is like a 50 year old person having surfed
+the internet for a long time - they remember a lot, but most of their
+memory is based on wrong sources, or fake memories."
+Using tools, this problem can be reduced a bit, but bias and bluffing
+remain a big challenge.
+
+
+### Further Reading {#references}
 
 [^transformers]: [Attention is all you need](https://en.wikipedia.org/wiki/Attention_Is_All_You_Need)
 [^towardsdatascience]: [Energy usage to train and run an LLM](https://towardsdatascience.com/lets-analyze-openais-claims-about-chatgpt-energy-use/)
