@@ -310,6 +310,7 @@ blended together without clear source attribution.
 Using tools, this problem can be reduced a bit, but bias and bluffing
 remain a big challenge.
 
+{{< mastodon https://phanpy.social/#/social.epfl.ch/s/115837020306697154 >}}
 
 ### External Links {#references}
 
