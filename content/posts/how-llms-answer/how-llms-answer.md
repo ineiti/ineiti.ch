@@ -8,7 +8,7 @@ categories = ['AI', 'Technology']
 tags = ['LLM', 'Machine Learning', 'AI', 'Natural Language Processing']
 +++
 
-The dream of an interaction with our computers through language is
+The dream of an interaction with our computers through natural language is
 very old, and many different systems have been tried.
 A breakthrough has been reached in 2022 with
 *Large Language Models*, based on Transformers[^transformers],
@@ -101,6 +101,8 @@ If the model is trained not enough, the quality of the answers will be
 bad, too[^overfitting]
 - if you want to have more details how a transformer _really_ works, the
 following is a nice animation: [^transformerExplainer]
+- to store one of the commercial models, it needs between 200GB to 2TB of 
+memory, depending on the quality of the model[^microsoftReveal]
 
 ---
 
@@ -326,6 +328,7 @@ keywords will turn up tons of videos...
 [^trainingdata]: **Blog** from *Educating Silicon*: [How much training data is available?](https://www.educatingsilicon.com/2024/05/09/how-much-llm-training-data-is-there-in-the-limit/)
 [^overfitting]: **Blog** from Nat.IO: [Understanding Overfitting in LLMs: What It Is and How to Address It](https://nat.io/blog/overfitting-in-llms), Nat Currier
 [^transformerExplainer]: **Animation** from **Research Paper**: [Transformer Explainer](https://poloclub.github.io/transformer-explainer/), Aeree Cho, Grace C. Kim, Alexander Karpekov, Alec Helbling, Zijie J. Wang, Seongmin Lee, Benjamin Hoover, Duen Horng Chau
+[^microsoftReveal]: **Research Paper** from Microsoft, summarized: [Microsoft Reveals Model Sizes of Major LLMs](https://deepnewz.com/ai-modeling/microsoft-reveals-model-sizes-major-llms-gpt-4-1-76t-gpt-4o-200b-claude-3-5-175b-7be8af91)
 [^rlhfOpenAI]: **Research Paper** from OpenIA: [Learning to summarize from human feedback](https://arxiv.org/abs/2009.01325), Nisan Stiennon, Long Ouyang, Jeff Wu, Daniel M. Ziegler, Ryan Lowe, Chelsea Voss, Alec Radford, Dario Amodei, Paul Christiano
 [^bigTechAfrica]: **Blog** from Rest Of World: [How Big Tech hides its outsourced African workforce](https://restofworld.org/2025/big-tech-ai-labor-supply-chain-african-workers/), Stephanie Wangari and Gayathri Vaidyanathan
 [^illusionOfThinking]: **Research Paper** from Apple research: [The Illusion of Thinking](https://machinelearning.apple.com/research/illusion-of-thinking), Parshin Shojaee, Iman Mirzadeh, Keivan Alizadeh, Maxwell Horton, Samy Bengio, Mehrdad Farajtabar
