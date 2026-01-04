@@ -310,9 +310,14 @@ blended together without clear source attribution.
 Using tools, this problem can be reduced a bit, but bias and bluffing
 remain a big challenge.
 
-{{< mastodon "https://phanpy.social/#/social.epfl.ch/s/115837020306697154" >}}
+# Discussion and Comments
 
-### External Links {#references}
+To discuss or leave comments, use Mastodon to answer to the following
+toot, and it will appear here:
+
+{{< mastodon "https://social.epfl.ch/@ligasser/115837020306697154" >}}
+
+# External Links {#references}
 
 These links point to external sources used while writing this blog 
 entry.
