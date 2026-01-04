@@ -1,6 +1,6 @@
 +++
 date = '2025-11-17T19:28:00+01:00'
-draft = true
+draft = false
 title = 'How do LLMs answer your question?'
 description = 'An exploration of the four key components that enable Large Language Models to provide intelligent responses'
 showTableOfContents = true
