@@ -266,7 +266,7 @@ historical prejudices found on the internet.
 Second, the creators' worldview influences the model through RLHF guidelines
 and system prompts.
 During training, and by changing the system prompt, it is possible to
-change the way a chatbot answers [^ElonGrok].
+change the way a chatbot answers [^elonGrok].
 This can be problematic as it may perpetuate unfair stereotypes, provide
 unbalanced perspectives on controversial topics, or inadvertently discriminate
 against certain groups.
@@ -333,6 +333,7 @@ keywords will turn up tons of videos...
 [^towardsdatascience]: **Blog** from *towards data science*: [Energy usage to train and run an LLM](https://towardsdatascience.com/lets-analyze-openais-claims-about-chatgpt-energy-use/), Kasper Groes and Albin Ludvigsen
 [^trainingdata]: **Blog** from *Educating Silicon*: [How much training data is available?](https://www.educatingsilicon.com/2024/05/09/how-much-llm-training-data-is-there-in-the-limit/)
 [^overfitting]: **Blog** from Nat.IO: [Understanding Overfitting in LLMs: What It Is and How to Address It](https://nat.io/blog/overfitting-in-llms), Nat Currier
+[^elonGrok]: **News Article** from the New York Times: [How Elon Musk Is Remaking Grok in His Image](https://www.nytimes.com/2025/09/02/technology/elon-musk-grok-conservative-chatbot.html) - [archived](https://archive.ph/DIvbR) 
 [^transformerExplainer]: **Animation** from **Research Paper**: [Transformer Explainer](https://poloclub.github.io/transformer-explainer/), Aeree Cho, Grace C. Kim, Alexander Karpekov, Alec Helbling, Zijie J. Wang, Seongmin Lee, Benjamin Hoover, Duen Horng Chau
 [^microsoftReveal]: **Research Paper** from Microsoft, summarized: [Microsoft Reveals Model Sizes of Major LLMs](https://deepnewz.com/ai-modeling/microsoft-reveals-model-sizes-major-llms-gpt-4-1-76t-gpt-4o-200b-claude-3-5-175b-7be8af91)
 [^rlhfOpenAI]: **Research Paper** from OpenIA: [Learning to summarize from human feedback](https://arxiv.org/abs/2009.01325), Nisan Stiennon, Long Ouyang, Jeff Wu, Daniel M. Ziegler, Ryan Lowe, Chelsea Voss, Alec Radford, Dario Amodei, Paul Christiano
