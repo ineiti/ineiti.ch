@@ -344,4 +344,4 @@ keywords will turn up tons of videos...
 [^huggingfaceDeepseekUncensored]: **LLM model** on Huggingface: [Unbiased System Prompt](https://huggingface.co/nicoboss/DeepSeek-R1-Distill-Llama-70B-Uncensored-v2-Unbiased)
 [^lethalTrifecta]: **Blog** from Simon Willison: [The lethal trifecta for AI agents](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)
 [^apxAgentWorkflow]: **Course** from ApX: [A simplified AI Agent workflow](https://apxml.com/courses/intro-llm-agents/chapter-2-llm-agent-building-blocks/a-simplified-agent-workflow)
-[^openAIMCP]: **Blog** from OpenAI: [Model Context Protocol](https://www.anthropic.com/news/model-context-protocol)
+[^openAIMCP]: **Blog** from Anthropic: [Model Context Protocol](https://www.anthropic.com/news/model-context-protocol)
