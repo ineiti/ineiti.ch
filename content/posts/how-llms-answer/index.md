@@ -6,6 +6,7 @@ description = 'An exploration of the four key components that enable Large Langu
 showTableOfContents = true
 categories = ['AI', 'Technology']
 tags = ['LLM', 'Machine Learning', 'AI', 'Natural Language Processing']
+aliases = ["/how-llms-answer/how-llms-answer"]
 +++
 
 The dream of an interaction with our computers through natural language is

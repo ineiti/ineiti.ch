@@ -10,6 +10,8 @@ tags:
   - Traefik
   - Docker
   - Server
+aliases:
+  - "/traefik-101/traefik-101"
 ---
 
 Many of us are running traefik. If you're like me, you copy/pasted some `docker-compose.yaml` from a webpage, added some `labels` to your other `docker-compose.yaml` files, and things went up and running. Sooner or later you want to have something more fancy, and you need to understand what you actually did. RTFM and all that, you look at https://doc.traefik.io, and ... it's a mess. Honestly, I'm lost in this documentation.
