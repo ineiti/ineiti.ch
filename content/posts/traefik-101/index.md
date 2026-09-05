@@ -47,7 +47,7 @@ Of course a `sudo vi /etc/hosts` or whatever editor you prefer also works. On Wi
 This is a list of all traefik terms used in this post. They are linked to the documentation of traefik, to allow you to dive deeper into each definition.
 
 As an overview, the following image shows the different components described in this blog post:
-![Static - Dynamic Configuration](../static-dynamic-configuration.png)
+![Static - Dynamic Configuration](./static-dynamic-configuration.png)
 Fig: Static and Dynamic Configuration from [Traefik Documentation](https://doc.traefik.io/traefik/v3.2/getting-started/configuration-overview/)
  
 * [Static configuration](https://doc.traefik.io/traefik/v3.2/getting-started/configuration-overview/#the-static-configuration) - only loaded when traefik starts
@@ -269,7 +269,7 @@ Now you can add services which will be more or less automatically added to traef
 
 ### Simplest Example
 
-![Simple Configuration](../traefik-simple.png)
+![Simple Configuration](./traefik-simple.png)
 Fig: the simplest configuration of traefik with a direct route from the entrypoint to the service.
 
 Let's create a simple example with a hostname. If you run this locally on your computer, you can choose any hostname, and add it to `/etc/hosts`. If you bought a domain name and configured it to point to your SERVER_IP, you can also use directly this domain name, or any subdomains. Traefik is very fond of the `whoami` service which returns the IP of the client. Let's use it by creating a new `docker-compose.yaml` file. On a dedicated server, create a `whoami` user, give it the rights to use `docker`, and then create the file `/home/whoami/docker-compose.yaml` with the following content:
@@ -299,7 +299,7 @@ If you're running this locally on your computer, be sure to add `whoami` as a re
 
 ### Defining the Port
 
-![Service with port](../traefik-port.png)
+![Service with port](./traefik-port.png)
 Fig: traefik will connect the router automatically to the service in the `docker-compose.yaml` 
 
 Using traefik, you don't need to expose the port in the docker-compose.yaml file with the `ports:` directive. It is enough if the `Dockerfile` has an `EXPOSE` directive. You can check that this is the case for `traefik/whoami` with `docker inspect traefik/whoami` and search for `ExposedPorts`. If you have a docker-image with a missing `EXPOSE` directive, you can create a traefik service with the internal port. Of course, your docker image must listen on this port not only on `127.0.0.1`, but on the global `0.0.0.0` address.
@@ -327,7 +327,7 @@ networks:
 
 ### Multiple Domains for One Service
 
-![Multi-domain rule](../traefik-multidomain.png)
+![Multi-domain rule](./traefik-multidomain.png)
 Fig: the router created by traefik with a rule to accept two hostnames
 
 If you want to route multiple domains to a single docker container, you can add a label to inform traefik your rule should allow a list of hosts. While using `HostRegexp` is also a possibility, traefik will complain that it cannot extract the domain names to pass them to the `certificatesResolvers`. But using a list of `or`ed `Host`s allows traefik to extract the domain names and create certificates for each one of them.
@@ -360,7 +360,7 @@ To spice it up, the rules are:
 * Route all requests to https://whoami to the traefik service of the docker container
 * All other requests to http://whoami should be redirected to https://whoami
 
-![Pass-through and redirect](../traefik-pass-through.png)
+![Pass-through and redirect](./traefik-pass-through.png)
 Fig: the three rules from above, and the default rule with the lowest priority of 1
 
 ```yaml

@@ -16,7 +16,7 @@ a WiFi, and drive a LED strip at the same time.
 So I created a little game where the LED-strip is formed into a circle, and then the
 users can move their figure along the LED-strip.
 
-![Start screen](../screen_start.png)
+![Start screen](./screen_start.png)
 Fig: starting the game and choosing the color
 
 ## Rules
@@ -30,7 +30,7 @@ To make the game interesting, the following applies:
   it
 - the speed of the users is higher than the speed of the tokens
 
-![Countdown to play](../screen_countdown.png)
+![Countdown to play](./screen_countdown.png)
 Fig: countdown with the chosen colors
 
 ## Improvements
@@ -42,7 +42,7 @@ While playing with my nephews, I upgraded the game with some new features:
 - keep the display clean - I thought it's funny if there is some blur from time to time,
   but it really makes playing impossible
 
-![Playing with killers](../screen_play_killers.png)
+![Playing with killers](./screen_play_killers.png)
 Fig: red and green playing, and three killers on their way
 
 ## Technical Details
@@ -86,7 +86,7 @@ This made the display flicker quite often.
 After a lot of experiments - as long as it took me to create the original game - it turned
 out that the TLS library used by the Atom Lite is very slow.
 To fix this, I added a pass-through to traefik, which was difficult, until I wrote the
-[Traefik 101](../traefik-101) to understand how it actually works.
+[Traefik 101](./traefik-101) to understand how it actually works.
 
 #### Communication tests
 
