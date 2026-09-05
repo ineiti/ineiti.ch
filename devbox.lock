@@ -243,7 +243,7 @@
     },
     "nodejs@20": {
       "last_modified": "2025-12-18T02:44:17Z",
-      "plugin_version": "0.0.2",
+      "plugin_version": "0.0.4",
       "resolved": "github:NixOS/nixpkgs/def3da69945bbe338c373fddad5a1bb49cf199ce#nodejs_20",
       "source": "devbox-search",
       "version": "20.19.6",
