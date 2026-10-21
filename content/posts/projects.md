@@ -3,7 +3,7 @@ date = '2026-09-04T13:37:01+02:00'
 draft = false
 title = 'Projects'
 description = 'Some of my week-end projects'
-showTableOfContents = false
+showTableOfContents = true
 categories = []
 tags = []
 +++
